@@ -1,0 +1,24 @@
+BEGIN
+
+if (NEW.VCH_TYPE>0) then
+
+	set @vchno = (SELECT max(VCH_NO) FROM vouchers 
+                  where VCH_TYPE= NEW.VCH_TYPE 
+                  and VCH_YEAR=NEW.VCH_YEAR 
+                  and VCH_MONTH=NEW.VCH_MONTH) + 1;
+    
+    set @vchno= IFNULL(@vchno ,1);
+
+	set @vc=LPAD(@vchno,5,'0');
+	set @vchno_full=CONCAT( NEW.VCH_TYPE,NEW.VCH_YEAR,NEW.VCH_MONTH, @vc);
+
+
+	set NEW.VCH_NO=@vchno,NEW.VCH_NO_FULL=@vchno_full;
+
+	
+else
+	
+     signal sqlstate '45000' set message_text = msg;
+	
+end if;
+end
