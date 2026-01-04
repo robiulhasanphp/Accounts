@@ -1,0 +1,51 @@
+<table class="table-bordered" style="text-align:center">
+    <tr align="center">
+          	<td>Date</td>
+          	<td>Voucher No</td>
+            <td>Accounts</td>
+
+            <td>Narration</td>
+        	<td>Amount</td>
+         
+            <td>Action</td>
+          </tr>
+        
+        
+          <?php
+		  //var_dump($CompanyRoot);
+		  $total=0;
+		  foreach($tabledata as $a) {?>
+         <tr align="center">
+             <?php if(!isset($ndelete)){
+				 $ndelete=false;
+			 }?>
+              <td><?php
+			  $nedit=false;
+			  		 if(isset($no_edit))
+					 {
+						 $nedit=$no_edit;
+					 }
+				$date=$a->VCH_DATE;
+			    echo $date->format('d-m-Y');?></td>
+			 
+              <td><?php  echo  $a->VCH_NO_FULL; ?> </td>
+
+              <td align="left"><?php echo strtoupper($a->VCH_FULL_DESCRIPTION)?></td>
+                            <td align="left"><?php echo $a->VCH_NARRATION?></td>
+<td align="right"><?php echo number_format($a->VCH_AMOUNT,2);
+
+$total=$total+$a->VCH_AMOUNT;
+?></td>
+            
+              
+                   <td align="center">
+               <?php if($nedit==false) {echo $this->Html->link('Edit',array ('action' => 'edit', $a->VCH_ID)); } ?> &nbsp;|
+               
+               
+       <?php if($ndelete==true) { echo '';} else {echo $this->Html->link('Delete',array ('action' => 'delete', $a->VCH_ID));} ?> 
+         
+             	 </td>
+          </tr> 
+          <?php }?>
+          <tr class="total_bottom"><td  class="total_bottom" colspan="5" style="text-align:right"><b>Total</b> : &nbsp;&nbsp;<?php echo number_format($total,2);?></td><td></tr>
+</table>
