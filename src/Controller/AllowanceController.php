@@ -1,150 +1,141 @@
 <?php
-	namespace App\Controller;
-	
+declare(strict_types=1);
+
+namespace App\Controller;
+
 use App\Controller\AppController;
-use Cake\Event\Event;
-use Cake\Network\Exception\NotFoundException;
-	
-	
-	
-	class  AllowanceController extends AppController{
-		
-/*		var $uses=array ('CompanyRoot', 'CompanyInfo', 'CompanyBranch');
-		public $helpers = array('Html', 'Form', 'Session');
-		public $components = array('Session');*/
-		
+use Cake\Http\Exception\NotFoundException;
+use Cake\ORM\Exception\PersistenceFailedException;
 
-		
-		
-		
-		public function index(){
-			
-	$Allowance = $this->Allowance->find('all')->contain(['Ledgerstype']);
-	echo "<pre>";
-	var_dump($Allowance->ledgerstype);
-/*	$Allowance=$Allowance1->Ledgerstype-find('all')		
-            ->where(['LTM_ID' =>LDG_TYPE_ALLOWANCES])
-			->orWhere(['LTM_ID' =>LDG_TYPE_DEDUCTION]);*/
-        $this->set(compact('Allowance'));
-	
-   
-	
-		}
-		
-		
-	  public function view($BAS_ID)
+class AllowanceController extends AppController
+{
+    public function index(): void
     {
-        if (!$BAS_ID) 
-		{
-            throw new NotFoundException(__('Invalid user'));
+        $allowances = $this->Allowance
+            ->find()
+            ->contain(['Ledgerstype'])
+            ->orderDesc('Allowance.created')
+            ->all();
+
+        $this->set(compact('allowances'));
+    }
+
+    public function view(int $id): void
+    {
+        try {
+            $allowance = $this->Allowance->get($id, [
+                'contain' => ['Ledgerstype']
+            ]);
+        } catch (\Exception $e) {
+            throw new NotFoundException('Allowance not found');
         }
 
-        $Allowance = $this->Allowance->get($BAS_ID);
-        $this->set(compact('Allowance'));
+        $this->set(compact('allowance'));
     }
-		
-		
-	  public function add()
+
+    public function add()
     {
-        $Allowance = $this->Allowance->newEntity();
+        $allowance = $this->Allowance->newEmptyEntity();
+
         if ($this->request->is('post')) {
-            $Allowance = $this->Allowance->patchEntity($Allowance, $this->request->data);
-			$Allowance->COMPANY_ID=1;
-						$Allowance->LDG_DESIGNATION=1;
-				$Allowance->BRACH_ID=1;
-						$Allowance->LDG_LAST_EDIT_BY=1;
-				$Allowance->LDG_CREATE_BY=1;
-			
-            if ($this->Allowance->save($Allowance)) {
-			
-			
-	
-				
-				$new_id=$Allowance->LDG_ID;
-				 $Ledgerstype = $this->Allowance->Ledgerstype->newEntity();
-				 
-				  $Ledgerstype->LDG_ID=$new_id;
-				  if($Allowance->LDG_TYPES=="ALW")
-				  {
-				   $Ledgerstype->LTM_ID=LDG_TYPE_ALLOWANCES;
-				  }
-				  else
-				  {
-					   $Ledgerstype->LTM_ID=LDG_TYPE_DEDUCTION;
-				  }
-				    $this->Allowance->Ledgerstype->save($Ledgerstype);
-				//	exit();
-                $this->Flash->success(__('The user has been saved.'));
-               return $this->redirect(array('action' => 'index'));
+
+            $allowance = $this->Allowance->patchEntity(
+                $allowance,
+                $this->request->getData()
+            );
+
+            $this->applyDefaults($allowance);
+
+            $connection = $this->Allowance->getConnection();
+            $connection->begin();
+
+            try {
+                $this->Allowance->saveOrFail($allowance);
+
+                $this->createLedgerType($allowance);
+
+                $connection->commit();
+
+                $this->Flash->success(__('Saved successfully'));
+                return $this->redirect(['action' => 'index']);
+
+            } catch (\Throwable $e) {
+                $connection->rollback();
+                $this->Flash->error(__('Save failed'));
             }
-            $this->Flash->error(__('Unable to add the user.'));
         }
-        $this->set('Allowance', $Allowance);
+
+        $this->set(compact('allowance'));
     }
 
+    public function edit(int $id)
+    {
+        $allowance = $this->Allowance->get($id);
 
-		
-		
-public function edit($BAS_ID = null)
-{
-    $Allowance = $this->Allowance->get($BAS_ID);
-    if ($this->request->is(['post', 'put'])) {
-        $this->Allowance->patchEntity($Allowance, $this->request->data);
-		$Allowance->BAS_TYPE_ID=6;
-        if ($this->Allowance->save($Allowance)) {
-            $this->Flash->success(__('Your article has been updated.'));
-            return $this->redirect(['action' => 'index']);
+        if ($this->request->is(['patch', 'post', 'put'])) {
+
+            $allowance = $this->Allowance->patchEntity(
+                $allowance,
+                $this->request->getData()
+            );
+
+            $allowance->bas_type_id = 6;
+
+            if ($this->Allowance->save($allowance)) {
+                $this->Flash->success(__('Updated'));
+                return $this->redirect(['action' => 'index']);
+            }
+
+            $this->Flash->error(__('Update failed'));
         }
-        $this->Flash->error(__('Unable to update your article.'));
+
+        $this->set(compact('allowance'));
     }
 
-    $this->set('Allowance', $Allowance);
-}
+    public function delete(int $id)
+    {
+        $this->request->allowMethod(['post', 'delete']);
 
-	
-	
-		public function delete($BAS_ID = null)
-{
-    $Allowance = $this->Allowance->get($BAS_ID);
-        $this->request->is(['post', 'delete']);
-        if ($this->Allowance->delete($Allowance)) {
-            $this->Flash->success('The user has been deleted.');
+        $allowance = $this->Allowance->get($id);
+
+        if ($this->Allowance->delete($allowance)) {
+            $this->Flash->success(__('Deleted'));
         } else {
-            $this->Flash->error('The user could not be deleted. Please, try again.');
+            $this->Flash->error(__('Delete failed'));
         }
+
         return $this->redirect(['action' => 'index']);
     }
-	
-	
-	
-	
-	
-	public function isAuthorized($user)
-{
-    // All registered users can add articles
-    if ($this->request->action === 'add') 
-	{
-        return true;
+
+    private function applyDefaults($allowance): void
+    {
+        $userId = $this->request->getAttribute('identity')->id ?? 0;
+
+        $allowance->company_id = 1;
+        $allowance->branch_id = 1;
+        $allowance->ldg_designation = 1;
+        $allowance->ldg_create_by = $userId;
+        $allowance->ldg_last_edit_by = $userId;
     }
 
-    // The owner of an article can edit and delete it
-  /*  if (in_array($this->request->action, ['edit', 'delete']))
-	 {
-        $articleId = (int)$this->request->params['pass'][0];
-        if ($this->Articles->isOwnedBy($articleId, $user['id'])) 
-		{
+    private function createLedgerType($allowance): void
+    {
+        $ledgerstype = $this->Allowance->Ledgerstype->newEmptyEntity();
+
+        $ledgerstype->ldg_id = $allowance->ldg_id;
+        $ledgerstype->ltm_id = $allowance->ldg_types === 'ALW'
+            ? LDG_TYPE_ALLOWANCES
+            : LDG_TYPE_DEDUCTION;
+
+        $this->Allowance->Ledgerstype->saveOrFail($ledgerstype);
+    }
+
+    public function isAuthorized($user): bool
+    {
+        if ($this->request->getParam('action') === 'add') {
             return true;
         }
-    }*/
 
-    return parent::isAuthorized($user);
+        return parent::isAuthorized($user);
+    }
 }
-	
-	
-		
-		
-		
-		
-	}
-
-?>
