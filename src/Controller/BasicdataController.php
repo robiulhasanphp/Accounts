@@ -1,122 +1,99 @@
 <?php
-	namespace App\Controller;
-	
+declare(strict_types=1);
+
+namespace App\Controller;
+
 use App\Controller\AppController;
-use Cake\Event\Event;
-use Cake\Network\Exception\NotFoundException;
-	
-	
-	
-	class  BasicdataController extends AppController{
-		
-/*		var $uses=array ('CompanyRoot', 'CompanyInfo', 'CompanyBranch');
-		public $helpers = array('Html', 'Form', 'Session');
-		public $components = array('Session');*/
-		
+use Cake\Http\Exception\NotFoundException;
 
-		
-		
-		
-		public function index(){
-			
-	$Basicdata = $this->Basicdata->find('all');
-        $this->set(compact('Basicdata'));
-	
-   
-	
-		}
-		
-		
-	  public function view($BAS_ID)
+class BasicdataController extends AppController
+{
+    public function index(): void
     {
-        if (!$BAS_ID) 
-		{
-            throw new NotFoundException(__('Invalid user'));
+        $basicdata = $this->Basicdata->find()->all();
+        $this->set(compact('basicdata'));
+    }
+
+    public function view(int $id): void
+    {
+        $basicdata = $this->Basicdata->get($id);
+
+        if (!$basicdata) {
+            throw new NotFoundException('Record not found');
         }
 
-        $Basicdata = $this->Basicdata->get($BAS_ID);
-        $this->set(compact('Basicdata'));
+        $this->set(compact('basicdata'));
     }
-		
-		
-	  public function add()
+
+    public function add()
     {
-        $Basicdata = $this->Basicdata->newEntity();
+        $basicdata = $this->Basicdata->newEmptyEntity();
+
         if ($this->request->is('post')) {
-            $Basicdata = $this->Basicdata->patchEntity($Basicdata, $this->request->data);
-			$Basicdata->BAS_TYPE_ID=3;
-            if ($this->Basicdata->save($Basicdata)) {
-                $this->Flash->success(__('The user has been saved.'));
-               return $this->redirect(array('action' => 'index'));
+
+            $basicdata = $this->Basicdata->patchEntity(
+                $basicdata,
+                $this->request->getData()
+            );
+
+            $basicdata->bas_type_id = 3;
+
+            if ($this->Basicdata->save($basicdata)) {
+                $this->Flash->success('Saved successfully');
+                return $this->redirect(['action' => 'index']);
             }
-            $this->Flash->error(__('Unable to add the user.'));
+
+            $this->Flash->error('Save failed');
         }
-        $this->set('Basicdata', $Basicdata);
+
+        $this->set(compact('basicdata'));
     }
 
+    public function edit(int $id)
+    {
+        $basicdata = $this->Basicdata->get($id);
 
-		
-		
-public function edit($BAS_ID = null)
-{
-    $Basicdata = $this->Basicdata->get($BAS_ID);
-    if ($this->request->is(['post', 'put'])) {
-        $this->Basicdata->patchEntity($Basicdata, $this->request->data);
-		$Basicdata->BAS_TYPE_ID=3;
-        if ($this->Basicdata->save($Basicdata)) {
-            $this->Flash->success(__('Your article has been updated.'));
-            return $this->redirect(['action' => 'index']);
+        if ($this->request->is(['patch', 'post', 'put'])) {
+
+            $basicdata = $this->Basicdata->patchEntity(
+                $basicdata,
+                $this->request->getData()
+            );
+
+            $basicdata->bas_type_id = 3;
+
+            if ($this->Basicdata->save($basicdata)) {
+                $this->Flash->success('Updated successfully');
+                return $this->redirect(['action' => 'index']);
+            }
+
+            $this->Flash->error('Update failed');
         }
-        $this->Flash->error(__('Unable to update your article.'));
+
+        $this->set(compact('basicdata'));
     }
 
-    $this->set('Basicdata', $Basicdata);
-}
+    public function delete(int $id)
+    {
+        $this->request->allowMethod(['post', 'delete']);
 
-	
-	
-		public function delete($BAS_ID = null)
-{
-    $Basicdata = $this->Basicdata->get($BAS_ID);
-        $this->request->is(['post', 'delete']);
-        if ($this->Basicdata->delete($Basicdata)) {
-            $this->Flash->success('The user has been deleted.');
+        $basicdata = $this->Basicdata->get($id);
+
+        if ($this->Basicdata->delete($basicdata)) {
+            $this->Flash->success('Deleted successfully');
         } else {
-            $this->Flash->error('The user could not be deleted. Please, try again.');
+            $this->Flash->error('Delete failed');
         }
+
         return $this->redirect(['action' => 'index']);
     }
-	
-	
-	
-	
-	
-	public function isAuthorized($user)
-{
-    // All registered users can add articles
-    if ($this->request->action === 'add') 
-	{
-        return true;
-    }
 
-    // The owner of an article can edit and delete it
-  /*  if (in_array($this->request->action, ['edit', 'delete']))
-	 {
-        $articleId = (int)$this->request->params['pass'][0];
-        if ($this->Articles->isOwnedBy($articleId, $user['id'])) 
-		{
+    public function isAuthorized($user): bool
+    {
+        if ($this->request->getParam('action') === 'add') {
             return true;
         }
-    }*/
 
-    return parent::isAuthorized($user);
+        return parent::isAuthorized($user);
+    }
 }
-	
-	
-		
-		
-		
-		
-	}
-
-?>
