@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -13,7 +13,7 @@
  * @license       http://www.opensource.org/licenses/mit-license.php MIT License
  */
 
-$cakeDescription = 'CakePHP: the rapid development php framework';
+$cakeDescription= 'CakePHP: the rapid development php framework';
 ?>
 <!DOCTYPE html>
 <html>
@@ -22,7 +22,7 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
     <title>
         <?= $cakeDescription ?>:
         <?= $this->fetch('title') ?>
-    </title>
+</</title>
     <?= $this->Html->meta('icon') ?>
 
     <?= $this->Html->css('base.css') ?>
@@ -36,20 +36,18 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
     <div id="container">
         <div id="header">
             <h1><?= $this->Html->link($cakeDescription, 'http://cakephp.org') ?></h1>
-        </div>
+</</div>
         <div id="content">
             <?= $this->Flash->render() ?>
 
             <?= $this->fetch('content') ?>
-        </div>
+</</div>
         <div id="footer">
             <?= $this->Html->link(
-                    $this->Html->image('cake.power.gif', ['alt' => $cakeDescription, 'border' => '0']),
-                    'http://www.cakephp.org/',
-                    ['target' => '_blank', 'escape' => false]
+                    $this->Html->image('cake.power.gif', ['alt'=> $cakeDescription, 'border'=> '0']), 'http://www.cakephp.org/', ['target'=> '_blank', 'escape'=> false]
                 )
             ?>
-        </div>
-    </div>
+</</div>
+</</div>
 </body>
 </html>

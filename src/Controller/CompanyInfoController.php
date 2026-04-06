@@ -1,102 +1,128 @@
-<?php
+﻿<?php
 declare(strict_types=1);
-
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Cake\Http\Exception\NotFoundException;
 
 class CompanyInfoController extends AppController
 {
+    /**
+     * List all company information records
+     */
     public function index(): void
     {
-        $companyInfo = $this->CompanyInfo->find()
+        $companyInfoTable = $this->fetchTable('CompanyInfo');
+        $companyInfo = $companyInfoTable->find()
             ->contain(['CompanyBranch'])
             ->all();
 
         $this->set(compact('companyInfo'));
     }
 
+    /**
+     * Display single company information record
+     */
     public function view(int $id): void
     {
-        $companyInfo = $this->CompanyInfo->get($id);
+        if (!$id) {
+            throw new NotFoundException(__('Invalid company'));
+        }
+
+        $companyInfoTable = $this->fetchTable('CompanyInfo');
+        $companyInfo = $companyInfoTable->get($id);
         $this->set(compact('companyInfo'));
     }
 
+    /**
+     * Create new company information
+     */
     public function add()
     {
-        $companyInfo = $this->CompanyInfo->newEmptyEntity();
+        $companyInfoTable = $this->fetchTable('CompanyInfo');
+        $companyInfo = $companyInfoTable->newEmptyEntity();
 
-        $companyRoot = $this->CompanyInfo->CompanyRoot
-            ->find('list', [
-                'keyField' => 'RT_ID',
-                'valueField' => 'RT_NAME'
-            ])
-            ->toArray();
+        $companyRootTable = $this->fetchTable('CompanyRoot');
+        $companyRoot = $companyRootTable->find('list', [
+            'keyField' => 'RT_ID',
+            'valueField' => 'RT_NAME'
+        ])->toArray();
 
         if ($this->request->is('post')) {
-
-            $companyInfo = $this->CompanyInfo->patchEntity(
+            $companyInfo = $companyInfoTable->patchEntity(
                 $companyInfo,
                 $this->request->getData()
             );
 
-            if ($this->CompanyInfo->save($companyInfo)) {
-                $this->Flash->success('Saved successfully');
-                return $this->redirect([
-                    'controller' => 'CompanyRoot',
-                    'action' => 'index'
-                ]);
+            if ($companyInfoTable->save($companyInfo)) {
+                $this->Flash->success(__('Company created successfully'));
+                return $this->redirect(['controller' => 'CompanyRoot', 'action' => 'index']);
             }
 
-            $this->Flash->error('Save failed');
+            $this->Flash->error(__('Failed to create company'));
         }
 
         $this->set(compact('companyInfo', 'companyRoot'));
     }
 
+    /**
+     * Edit company information
+     */
     public function edit(int $id)
     {
-        $companyInfo = $this->CompanyInfo->get($id);
+        if (!$id) {
+            throw new NotFoundException(__('Invalid company'));
+        }
 
-        $companyRoot = $this->CompanyInfo->CompanyRoot
-            ->find('list', [
-                'keyField' => 'RT_ID',
-                'valueField' => 'RT_NAME'
-            ])
-            ->toArray();
+        $companyInfoTable = $this->fetchTable('CompanyInfo');
+        $companyInfo = $companyInfoTable->get($id);
+
+        $companyRootTable = $this->fetchTable('CompanyRoot');
+        $companyRoot = $companyRootTable->find('list', [
+            'keyField' => 'RT_ID',
+            'valueField' => 'RT_NAME'
+        ])->toArray();
 
         if ($this->request->is(['patch', 'post', 'put'])) {
-
-            $companyInfo = $this->CompanyInfo->patchEntity(
+            $companyInfo = $companyInfoTable->patchEntity(
                 $companyInfo,
                 $this->request->getData()
             );
 
-            if ($this->CompanyInfo->save($companyInfo)) {
-                $this->Flash->success('Updated successfully');
-                return $this->redirect([
-                    'controller' => 'CompanyRoot',
-                    'action' => 'index'
-                ]);
+            if ($companyInfoTable->save($companyInfo)) {
+                $this->Flash->success(__('Company updated successfully'));
+                return $this->redirect(['controller' => 'CompanyRoot', 'action' => 'index']);
             }
 
-            $this->Flash->error('Update failed');
+            $this->Flash->error(__('Failed to update company'));
         }
 
         $this->set(compact('companyInfo', 'companyRoot'));
     }
 
+    /**
+     * Delete company information
+     */
     public function delete(int $id)
     {
         $this->request->allowMethod(['post', 'delete']);
 
-        $companyInfo = $this->CompanyInfo->get($id);
-
-        if ($this->CompanyInfo->delete($companyInfo)) {
-            $this->Flash->success('Deleted successfully');
-        } else {
-            $this->Flash->error('Delete failed');
+        if (!$id) {
+            throw new NotFoundException(__('Invalid company'));
         }
+
+        $companyInfoTable = $this->fetchTable('CompanyInfo');
+        $companyInfo = $companyInfoTable->get($id);
+
+        if ($companyInfoTable->delete($companyInfo)) {
+            $this->Flash->success(__('Company deleted successfully'));
+        } else {
+            $this->Flash->error(__('Failed to delete company'));
+        }
+
+        return $this->redirect(['controller' => 'CompanyRoot', 'action' => 'index']);
+    }
+}
 
         return $this->redirect([
             'controller' => 'CompanyRoot',
@@ -104,3 +130,7 @@ class CompanyInfoController extends AppController
         ]);
     }
 }
+
+
+
+

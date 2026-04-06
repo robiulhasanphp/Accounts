@@ -1,456 +1,281 @@
-<?php
-	namespace App\Controller;
-	
+﻿<?php
+declare(strict_types=1);
+namespace App\Controller;
+
 use App\Controller\AppController;
-use Cake\Event\Event;
-use Cake\Network\Exception\NotFoundException;
-use Cake\ORM\TableRegistry;	
-	
-	
-	class  JournalController extends AppController{
-		
-/*		var $uses=array ('CompanyRoot', 'CompanyInfo', 'CompanyBranch');
-		public $helpers = array('Html', 'Form', 'Session');
-		public $components = array('Session');*/
-		
-		public function index(){
-			
+use Cake\Event\EventInterface;
+use Cake\Http\Exception\NotFoundException;
+use Cake\ORM\TableRegistry;
 
-			$sdate='';
-			$edate='';
-
-			if ($this->request->is(['post','put']))
-			{
-				$sdate=$this->request->data['sdate'];
-				$edate=$this->request->data['edate'];
- 
-				$sdate=DateToDB($sdate.'-','-');
-				$edate=DateToDB($edate.'-','-');
-
-
-				
-			}
-
-
-			if (($sdate=='') || ($edate==''))
-			{
-				$sdate=date('Y-m-').'01';
-				$edate=date('Y-m-',strtotime("+1 month")).'01';	
-				$date = date_create($edate);
-				date_add($date, date_interval_create_from_date_string('-1 days'));
-				$edate=date_format($date, 'Y-m-d');				
-			}
-			
-		$this->set('Journal', $this->Journal->find('all')
-		->where(['VCH_TYPE' =>VCH_TYPE_JOURNAL])
-		->andWhere(['VCH_DATE >=' =>$sdate])
-		->andWhere(['VCH_DATE <=' =>$edate])
-		->andWhere(['VCH_STATUS !=' =>STS_DELETED])
-		->order(['VCH_DATE' =>'DESC','VCH_ID' =>'DESC'])   ); 
-		
-		    $this->set(compact('sdate'));
-		$this->set(compact('edate'));
-
-
-	
-	
-   
-	
-		}
-		
-		
-		
-	 
-		
-		
-		
-	public function add()
+class JournalController extends AppController
+{
+    public function beforeFilter(EventInterface $event): void
     {
-	
-		$user = $this->Auth->User();
-		
-		$Basicdata = TableRegistry::get('Basicdata');
+        parent::beforeFilter($event);
+    }
 
-		$query=$Basicdata->find('list',['keyField' => ['BAS_ID'],'valueField' => 'BAS_NAME'])
-		->where(['BAS_TYPE_ID' =>5]);
-		$project = $query->toArray();
-		 $this->set(compact('project'));
-		 
+    public function index()
+    {
+        $journalTable = $this->fetchTable('Journal');
+        $sdate = '';
+        $edate = '';
 
-		
-		$query=$Basicdata->find('list',['keyField' => ['BAS_ID'],'valueField' => 'BAS_NAME'])
-		->where(['BAS_TYPE_ID' =>4]);
-		$department = $query->toArray();
-		 $this->set(compact('department'));
-		
-		
-		
-		
-			$query=$this->Journal->Ledgers->find('list',['keyField' => 'LDG_ID','valueField' => 'LDG_NAME']);
-		    $LDG_name = $query->toArray();
-		    $this->set(compact('LDG_name'));
+        if ($this->request->is(['post', 'put'])) {
+            $data = $this->request->getData();
+            $sdate = $data['sdate'] ?? '';
+            $edate = $data['edate'] ?? '';
 
-		 
+            $sdate = $this->dateToDB($sdate . '-', '-');
+            $edate = $this->dateToDB($edate . '-', '-');
+        }
 
-		
-		
-	
-	
-        $Journal = $this->Journal->newEntity();
+        if (empty($sdate) || empty($edate)) {
+            $sdate = date('Y-m-') . '01';
+            $edate = date('Y-m-', strtotime('+1 month')) . '01';
+            $date = date_create($edate);
+            date_add($date, date_interval_create_from_date_string('-1 days'));
+            $edate = date_format($date, 'Y-m-d');
+        }
+
+        $journals = $journalTable->find('all')
+            ->where(['VCH_TYPE' => VCH_TYPE_JOURNAL])
+            ->andWhere(['VCH_DATE >=' => $sdate])
+            ->andWhere(['VCH_DATE <=' => $edate])
+            ->andWhere(['VCH_STATUS !=' => STS_DELETED])
+            ->order(['VCH_DATE' => 'DESC', 'VCH_ID' => 'DESC']);
+
+        $this->set('Journal', $journals);
+        $this->set(compact('sdate', 'edate'));
+    }
+
+    public function add()
+    {
+        $user = $this->Auth->user();
+        $basicdataTable = $this->fetchTable('Basicdata');
+        $journalTable = $this->fetchTable('Journal');
+
+        $query = $basicdataTable->find('list', ['keyField' => 'BAS_ID', 'valueField' => 'BAS_NAME'])
+            ->where(['BAS_TYPE_ID' => 5]);
+        $project = $query->toArray();
+        $this->set(compact('project'));
+
+        $query = $basicdataTable->find('list', ['keyField' => 'BAS_ID', 'valueField' => 'BAS_NAME'])
+            ->where(['BAS_TYPE_ID' => 4]);
+        $department = $query->toArray();
+        $this->set(compact('department'));
+
+        $query = $journalTable->Ledgers->find('list', ['keyField' => 'LDG_ID', 'valueField' => 'LDG_NAME']);
+        $LDG_name = $query->toArray();
+        $this->set(compact('LDG_name'));
+
+        $Journal = $journalTable->newEntity();
         if ($this->request->is('post')) {
+            $data = $this->request->getData();
+            $Journal = $journalTable->patchEntity($Journal, $data);
 
-			   $Journal = $this->Journal->patchEntity($Journal, $this->request->data);
-			
-			
-				$project=($this->request->data["VCH_PROJECT"]);
-				$department=($this->request->data["VCH_DEPARTMENT"]);
-			
-		
-				$Journal = $this->Journal->patchEntity($Journal, $this->request->data);
-				
-			
-			$invoice=$this->request->data('INVDATE');
+            $project = $data['VCH_PROJECT'] ?? null;
+            $department = $data['VCH_DEPARTMENT'] ?? null;
 
-			if ($invoice<>"")
-			{
-				
-				$invoice_date = $invoice;//$this->request->data('INVDATE');
-				$Journal->VCH_INV_DATE = DateToDB($invoice_date.'-','-');
-			}
-			
-			$chalan=$this->request->data('CHALLANDATE');
-			
-			if ($chalan<>"")
-			{
-				$chalan_date = $chalan;//$this->request->data('INVDATE');
-				$Journal->VCH_CHALLAN_DATE = DateToDB($chalan_date.'-','-');			
+            $invoice = $data['INVDATE'] ?? '';
+            if (!empty($invoice)) {
+                $Journal->VCH_INV_DATE = $this->dateToDB($invoice . '-', '-');
+            }
 
-			}
-			
-			$date=$this->request->data('pay_date');
-			$pay_date='';
-			if ($date<>"")
-			{
-			
-			
-				$date_sep = explode('-', $date);
-				$d = $date_sep[0];
-				$m = $date_sep[1];
-				$y = $date_sep[2];
-				$pay_date = $y.'-'.$m.'-'.$d;
-				
-				$Journal->VCH_DATE=$pay_date;
-				$Journal->VCH_MONTH=$m;
-				$Journal->VCH_YEAR=$y;
-			}
-			else
-			{
-				   $this->Flash->success(__('Please Specify Journal Date'));
-				     $this->set('Journal', $Journal);
-				   return;
-			}
-	
-				
-				
-			/**----- SOURCE Account Information-----------*/
-			$ACCOUNT_MAIN=($this->request->data["VCH_ACCOUNTS_MAIN"]);
-			$ldg = $this->Journal->Ledgers->get($ACCOUNT_MAIN);
-			
-			$ACCOUNT_MAIN_NAME= $ldg->LDG_CODE;
-			
-			$ACCOUNT_MAIN_DR=($this->request->data["VCH_DR_AMOUNT_MAIN"]);
-			$ACCOUNT_MAIN_CR=($this->request->data["VCH_CR_AMOUNT_MAIN"]);
-			$VCH_NARRATION_MAIN=($this->request->data["VCH_NARRATION_MAIN"]);
-			
-			$ACCOUNT_MAIN_DR=(float)$ACCOUNT_MAIN_DR;
-			$ACCOUNT_MAIN_CR=(float)$ACCOUNT_MAIN_CR;
-			/**----- SOURCE Account Information-----------*/
-		
+            $chalan = $data['CHALLANDATE'] ?? '';
+            if (!empty($chalan)) {
+                $Journal->VCH_CHALLAN_DATE = $this->dateToDB($chalan . '-', '-');
+            }
 
+            $date = $data['pay_date'] ?? '';
+            if (!empty($date)) {
+                $dateParts = explode('-', $date);
+                if (count($dateParts) === 3) {
+                    $d = $dateParts[0];
+                    $m = $dateParts[1];
+                    $y = $dateParts[2];
+                    $pay_date = $y . '-' . $m . '-' . $d;
+                    $Journal->VCH_DATE = $pay_date;
+                    $Journal->VCH_MONTH = $m;
+                    $Journal->VCH_YEAR = $y;
+                } else {
+                    $this->Flash->error(__('Please Specify Journal Date'));
+                    $this->set('Journal', $Journal);
+                    return;
+                }
+            } else {
+                $this->Flash->error(__('Please Specify Journal Date'));
+                $this->set('Journal', $Journal);
+                return;
+            }
 
-			/**----- DEST Account Information-----------*/
-				$accounts=($this->request->data["VCH_ACCOUNTS"]);
-				$narration=($this->request->data["VCH_NARRATIONS"]);
-				
-				$debit_amount=($this->request->data["VCH_DR_AMOUNT"]);
-				$credit_amount=($this->request->data["VCH_CR_AMOUNT"]);
-				
-				$iDest=0;
-				$t_debit=0;
-				$t_credit=0;
-				$Ledger_id=0;
-				$Description='';
-				$ldg_codes='';
-				foreach($accounts as $d)
-				{
+            // Main account info
+            $ACCOUNT_MAIN = $data['VCH_ACCOUNTS_MAIN'] ?? null;
+            $ldg = $journalTable->Ledgers->get($ACCOUNT_MAIN);
+            $ACCOUNT_MAIN_NAME = $ldg->LDG_CODE;
+            $ACCOUNT_MAIN_DR = (float)($data['VCH_DR_AMOUNT_MAIN'] ?? 0);
+            $ACCOUNT_MAIN_CR = (float)($data['VCH_CR_AMOUNT_MAIN'] ?? 0);
+            $VCH_NARRATION_MAIN = $data['VCH_NARRATION_MAIN'] ?? '';
 
-					$Ledger_id=$accounts[$iDest];
-					
-					$Description=$narration[$iDest];
+            // Dest accounts
+            $accounts = $data['VCH_ACCOUNTS'] ?? [];
+            $narration = $data['VCH_NARRATIONS'] ?? [];
+            $debit_amount = $data['VCH_DR_AMOUNT'] ?? [];
+            $credit_amount = $data['VCH_CR_AMOUNT'] ?? [];
 
-					if($Ledger_id>0)
-					{
-								$ldg = $this->Journal->Ledgers->get($Ledger_id);
-			
-								$ldg_codes= $ldg_codes.','.$ldg->LDG_CODE;
+            $iDest = 0;
+            $t_debit = 0.0;
+            $t_credit = 0.0;
+            $ldg_codes = '';
+            foreach ($accounts as $d) {
+                $Ledger_id = $accounts[$iDest] ?? 0;
+                $Description = $narration[$iDest] ?? '';
+                if ($Ledger_id > 0) {
+                    $ldg = $journalTable->Ledgers->get($Ledger_id);
+                    $ldg_codes .= ',' . $ldg->LDG_CODE;
+                    $debit = (float)($debit_amount[$iDest] ?? 0);
+                    $credit = (float)($credit_amount[$iDest] ?? 0);
+                    if (abs($debit - $credit) > 0) {
+                        $t_debit += $debit;
+                        $t_credit += $credit;
+                    }
+                }
+                $iDest++;
+            }
 
-						$debit=(float)$debit_amount[$iDest];
-						$credit=(float)$credit_amount[$iDest];
-					
-						if (abs($debit-$credit)>0)
-						{
-								$t_debit=$t_debit+$debit;
-								$t_credit=$t_credit+$credit;
-						
-						}
-						$iDest++;	
-					}
-					
-				}
-			/* ------------End of DEST Accounts-----------------------*/
-			
-			
+            if ((abs($t_debit - $t_credit) != abs($ACCOUNT_MAIN_DR - $ACCOUNT_MAIN_CR)) && abs($t_debit - $t_credit) > 0) {
+                $this->Flash->error(__('Debit And Credit Amounts Are Mismatch'));
+                $this->set('Journal', $Journal);
+                return;
+            }
 
-			if (((abs($t_debit-$t_credit)!=abs($ACCOUNT_MAIN_DR-$ACCOUNT_MAIN_CR))) && (abs($t_debit-$t_credit)>0))
-			{
-				//var_dump($debit_amount);
-				  $this->Flash->error(__('Debit And Credit Amounts Are Missmatch '));//.$t_debit.' '.$t_credit.' M '.$ACCOUNT_MAIN_DR.' '.$ACCOUNT_MAIN_CR ));
-				          $this->set('Journal', $Journal);
-				  return;
-			}
-			
-			
-			
-			$full_desc='';
-			if ($ACCOUNT_MAIN_DR>0)
-			{
-					$full_desc=$ACCOUNT_MAIN_NAME." (Dr), ".$ldg_codes. " (Cr)";
-					$Journal->VCH_AMOUNT=$ACCOUNT_MAIN_DR;
-			}
-			else
-			{			
-					$full_desc=$ACCOUNT_MAIN_NAME." (Cr), ".$ldg_codes. " (Dr)";
-					$Journal->VCH_AMOUNT=$ACCOUNT_MAIN_CR;
-			}
-			
-			$Journal->VCH_FULL_DESCRIPTION=$full_desc;
-			
-			$Journal->VCH_STATUS=STS_CREATE;
-			$Journal->VCH_CREATE_BY=$user['USR_ID'];
-			$Journal->VCH_TYPE=VCH_TYPE_JOURNAL;
-			$Journal->VCH_STATUS_BY=$user['USR_ID'];
-			$Journal->VCH_LAST_EDIT_BY=$user['USR_ID'];
-			$Journal->VCH_SUBMIT_BY=$user['USR_ID'];
-			
-			
-			
-			/*****Saving New Journal Entry from requested data****************/
-            if ($this->Journal->save($Journal)) {
+            $full_desc = '';
+            if ($ACCOUNT_MAIN_DR > 0) {
+                $full_desc = $ACCOUNT_MAIN_NAME . ' (Dr), ' . $ldg_codes . ' (Cr)';
+                $Journal->VCH_AMOUNT = $ACCOUNT_MAIN_DR;
+            } else {
+                $full_desc = $ACCOUNT_MAIN_NAME . ' (Cr), ' . $ldg_codes . ' (Dr)';
+                $Journal->VCH_AMOUNT = $ACCOUNT_MAIN_CR;
+            }
+            $Journal->VCH_FULL_DESCRIPTION = $full_desc;
+            $Journal->VCH_STATUS = STS_CREATE;
+            $Journal->VCH_CREATE_BY = $user['USR_ID'];
+            $Journal->VCH_TYPE = VCH_TYPE_JOURNAL;
+            $Journal->VCH_STATUS_BY = $user['USR_ID'];
+            $Journal->VCH_LAST_EDIT_BY = $user['USR_ID'];
+            $Journal->VCH_SUBMIT_BY = $user['USR_ID'];
 
-				$id = $Journal->VCH_ID;  //data call from table
-				$new_id=$id;
-				
-				$year=$Journal->VCH_YEAR;
-				$month=$Journal->VCH_MONTH;
-				$vch_date=$Journal->VCH_DATE;
+            if ($journalTable->save($Journal)) {
+                $id = $Journal->VCH_ID;
+                $new_id = $id;
+                $year = $Journal->VCH_YEAR;
+                $month = $Journal->VCH_MONTH;
+                $vch_date = $Journal->VCH_DATE;
+                $Journal = $journalTable->get($id);
+                $VCH_NO = $Journal->VCH_NO_FULL;
 
-				$Journal=$this->Journal->get($id);
-				
-				$VCH_NO=$Journal->VCH_NO_FULL;
-				
-			
-				
-				//insert data in another table
-				/*** Source Account Entry In Voucher Dtl Table */
-				
+                // Save main account to Voucherdtl
+                $voucherdtlTable = $this->fetchTable('Voucherdtl');
+                $Voucherdtl = $voucherdtlTable->newEntity();
+                $Voucherdtl->VCH_ID = $new_id;
+                $Voucherdtl->VDT_DATE = $vch_date;
+                $Voucherdtl->VDT_VOUCHER_NO = $VCH_NO;
+                $Voucherdtl->VDT_LOT = 1;
+                $Voucherdtl->VDT_SR = 1;
+                $Voucherdtl->VDT_LDG_ID = $ACCOUNT_MAIN;
+                $Voucherdtl->VDT_DESCRIPTION = !empty($VCH_NARRATION_MAIN) ? $VCH_NARRATION_MAIN : '';
+                $Voucherdtl->VDT_PROJECT = $project;
+                $Voucherdtl->VDT_DEPARTMENT = $department;
+                if ($ACCOUNT_MAIN_DR > 0) {
+                    $Voucherdtl->VDT_DEBIT = $ACCOUNT_MAIN_DR;
+                    $Voucherdtl->VDT_CREDIT = 0;
+                } else {
+                    $Voucherdtl->VDT_DEBIT = 0;
+                    $Voucherdtl->VDT_CREDIT = $ACCOUNT_MAIN_CR;
+                }
+                $voucherdtlTable->save($Voucherdtl);
 
-				$Voucherdtl = $this->Journal->Voucherdtl->newEntity();
-				$Voucherdtl->VCH_ID=$new_id;
-				$Voucherdtl->VDT_DATE=$vch_date;
-				$Voucherdtl->VDT_VOUCHER_NO=$VCH_NO;
-				$Voucherdtl->VDT_LOT=1;
-				$Voucherdtl->VDT_SR=1;
-				$Voucherdtl->VDT_LDG_ID=$ACCOUNT_MAIN;
-				if ($VCH_NARRATION_MAIN!='')
-				{
-					$Voucherdtl->VDT_DESCRIPTION=$VCH_NARRATION_MAIN;
-				}
-				else
-				{				
-					$Voucherdtl->VDT_DESCRIPTION='';
-				}
-				$Voucherdtl->VDT_PROJECT=$project;
-				$Voucherdtl->VDT_DEPARTMENT=$department;
-					  
-				if($ACCOUNT_MAIN_DR>0)
-				{
+                // Save dest accounts
+                $iDest = 0;
+                foreach ($accounts as $d) {
+                    $Ledger_id = $accounts[$iDest] ?? 0;
+                    $Description = $narration[$iDest] ?? '';
+                    if ($Ledger_id > 0) {
+                        $debit = (float)($debit_amount[$iDest] ?? 0);
+                        $credit = (float)($credit_amount[$iDest] ?? 0);
+                        if (abs($debit - $credit) > 0) {
+                            $Voucherdtl = $voucherdtlTable->newEntity();
+                            $Voucherdtl->VCH_ID = $new_id;
+                            $Voucherdtl->VDT_DATE = $vch_date;
+                            $Voucherdtl->VDT_VOUCHER_NO = $VCH_NO;
+                            $Voucherdtl->VDT_LOT = 1;
+                            $Voucherdtl->VDT_SR = $iDest + 2;
+                            $Voucherdtl->VDT_LDG_ID = $Ledger_id;
+                            $Voucherdtl->VDT_DESCRIPTION = $Description;
+                            $Voucherdtl->VDT_PROJECT = $project;
+                            $Voucherdtl->VDT_DEPARTMENT = $department;
+                            if ($ACCOUNT_MAIN_DR > 0) {
+                                $Voucherdtl->VDT_DEBIT = 0;
+                                $Voucherdtl->VDT_CREDIT = $credit;
+                            } else {
+                                $Voucherdtl->VDT_DEBIT = $debit;
+                                $Voucherdtl->VDT_CREDIT = 0;
+                            }
+                            $voucherdtlTable->save($Voucherdtl);
+                        }
+                    }
+                    $iDest++;
+                }
 
-						$Voucherdtl->VDT_DEBIT=$ACCOUNT_MAIN_DR;
-						$Voucherdtl->VDT_CREDIT=0;
-				}
-				else
-				{
-						$Voucherdtl->VDT_DEBIT=0;
-						$Voucherdtl->VDT_CREDIT=$ACCOUNT_MAIN_CR;
-				}
-				
-				/***  Source Account Data saved to Voucher Detail Table */
-		
-			    $this->Journal->Voucherdtl->save($Voucherdtl);
-				   
-		
-
-				/** All Dest Data To Voucher Details Table **/
-				$iDest=0;
-				$t_debit=0;
-				$t_credit=0;
-				$Ledger_id=0;
-				$Description='';
-				$ldg_codes='';
-
-				foreach($accounts as $d)
-				{
-
-					$Ledger_id=$accounts[$iDest];
-					
-					$Description=$narration[$iDest];
-
-					if($Ledger_id>0)
-					{
-								$ldg = $this->Journal->Ledgers->get($Ledger_id);
-			
-								$ldg_codes= $ldg_codes.','.$ldg->LDG_CODE;
-
-						$debit=(float)$debit_amount[$iDest];
-						$credit=(float)$credit_amount[$iDest];
-					
-						if (abs($debit-$credit)>0)
-						{
-								$t_debit=$t_debit+$debit;
-								$t_credit=$t_credit+$credit;
-								
-								
-								$Voucherdtl = $this->Journal->Voucherdtl->newEntity();
-								$Voucherdtl->VCH_ID=$new_id;
-								$Voucherdtl->VDT_DATE=$vch_date;
-								$Voucherdtl->VDT_VOUCHER_NO=$VCH_NO;
-								$Voucherdtl->VDT_LOT=1;
-								$Voucherdtl->VDT_SR=($iDest+2);
-								$Voucherdtl->VDT_LDG_ID=$Ledger_id;
-								$Voucherdtl->VDT_DESCRIPTION=$Description;
-								$Voucherdtl->VDT_PROJECT=$project;
-								$Voucherdtl->VDT_DEPARTMENT=$department;
-								
-								if($ACCOUNT_MAIN_DR>0)
-								{
-								
-								$Voucherdtl->VDT_DEBIT=0;
-								$Voucherdtl->VDT_CREDIT=$credit;
-								}
-								else
-								{
-								$Voucherdtl->VDT_DEBIT=$debit;
-								$Voucherdtl->VDT_CREDIT=0;
-								}
-								
-								/***  Source Account Data saved to Voucher Detail Table */
-								
-								$this->Journal->Voucherdtl->save($Voucherdtl);
-					   
-
-								
-								
-						
-						}
-						$iDest++;	
-					}
-					
-				}
-						
-						
-
-	 
-	 				 if ($this->request->data["CONTINUE"]!=0)
-			  {
-				    $this->Flash->success(__('Voucher : '.$VCH_NO.' [ Amount = '.abs($t_debit-$t_credit).']  has been saved.'));
-				  return $this->redirect(array('action' => 'add'));
-				  
-			  }
-			  else
-			  {
-				  return $this->redirect(array('action' => 'index'));
-			  }
-			 
+                if (!empty($data['CONTINUE'])) {
+                    $this->Flash->success(__('Voucher : ' . $VCH_NO . ' [ Amount = ' . abs($t_debit - $t_credit) . '] has been saved.'));
+                    return $this->redirect(['action' => 'add']);
+                } else {
+                    return $this->redirect(['action' => 'index']);
+                }
             }
             $this->Flash->error(__('Unable to add the vouchers.'));
         }
         $this->set('Journal', $Journal);
     }
 
-
-		
-		
-		
-		
-
-	
-	
-		
-	public function delete($VCH_ID = null)
-{
-	
-	
-		$user = $this->Auth->User();	
-    $Journal = $this->Journal->get($VCH_ID);
-    if ($this->request->is(['post', 'put'])) {
-		
-
-		
-		
-        $this->Journal->patchEntity($Journal, $this->request->data);
-		
-		$Journal->VCH_STATUS=STS_DELETED;
-			$Journal->VCH_STATUS_DATE=date('Y-m-d');
-			$Journal->VCH_STATUS_BY=$user['USR_ID'];
-        if ($this->Journal->save($Journal)) {
-
-            return $this->redirect(['action' => 'index']);
+    public function delete($VCH_ID = null)
+    {
+        $user = $this->Auth->user();
+        $journalTable = $this->fetchTable('Journal');
+        $Journal = $journalTable->get($VCH_ID);
+        if ($this->request->is(['post', 'put'])) {
+            $data = $this->request->getData();
+            $Journal = $journalTable->patchEntity($Journal, $data);
+            $Journal->VCH_STATUS = STS_DELETED;
+            $Journal->VCH_STATUS_DATE = date('Y-m-d');
+            $Journal->VCH_STATUS_BY = $user['USR_ID'];
+            if ($journalTable->save($Journal)) {
+                return $this->redirect(['action' => 'index']);
+            }
+            $this->Flash->error(__('Unable to update your article.'));
         }
-        $this->Flash->error(__('Unable to update your article.'));
+        $this->set('Journal', $Journal);
     }
 
-    $this->set('Journal', $Journal);
-}
-	
-	
-	
-	
-	public function isAuthorized($user)
-{
-    // All registered users can add articles
-    if ($this->request->action === 'add') 
-	{
-        return true;
-    }
-
-    // The owner of an article can edit and delete it
-  /*  if (in_array($this->request->action, ['edit', 'delete']))
-	 {
-        $articleId = (int)$this->request->params['pass'][0];
-        if ($this->Articles->isOwnedBy($articleId, $user['id'])) 
-		{
+    public function isAuthorized($user): bool
+    {
+        if ($this->request->getParam('action') === 'add') {
             return true;
         }
-    }*/
+        return parent::isAuthorized($user);
+    }
 
-    return parent::isAuthorized($user);
+    private function dateToDB(string $date): string
+    {
+        // Assuming DateToDB converts dd-mm-yyyy to yyyy-mm-dd
+        $parts = explode('-', $date);
+        if (count($parts) === 3) {
+            return $parts[2] . '-' . $parts[1] . '-' . $parts[0];
+        }
+        return $date;
+    }
 }
-	
-	
-		
-		
-		
-		
-	}
 
-?>
+
+
+

@@ -1,10 +1,7 @@
-<script>
+﻿<script>
 	$(function() {
 		$( "#balance_date" ).datepicker({
-			changeMonth: true,
-			changeYear: true,
-			yearRange:'-90:+0',
-			dateFormat: 'dd-mm-yy'
+			changeMonth: true, changeYear: true, yearRange:'-90:+0', dateFormat: 'dd-mm-yy'
 		});
 	});
 </script>
@@ -13,80 +10,56 @@
 
 <div class="inner_box small">
 
-
-
 <h4 class="inner_title"> Creat Ledger Balance</h4>
 <div style="clear:both"></div>
 <div class="add_box">
 <hr />
-	<?php 
+	<?php
 		echo $this->Form->create($OpeningBalance);
-		
-		
-		
-            echo  $this->Form->input('LDG_ID', array(
-				'label'=>'Ledger Name',
-				'options' => $LDG_name,
-				'type'=>'select',
-				'style'=>'border:1px solid #ccc; background:url(../img/bg.png) repeat-x bottom;background-position:center'
-			)); 
-		
-		
-		
-		
-             echo $this->Form->input('balance_date', array(
-                    'label' => 'Balance Date',
-					'id' => 'balance_date',
-             )); 
-            
+
+echo  $this->Form->input('LDG_ID', array(
+				'label'=>'Ledger Name', 'options'=> $LDG_name, 'type'=>'select', 'style'=>'border:1px solid #ccc; background:url(../img/bg.png) repeat-x bottom;background-position:center'
+			));
+
+echo $this->Form->input('balance_date', array(
+                    'label'=> 'Balance Date', 'id'=> 'balance_date', ));
+
             echo $this->Form->input('LBL_BALANCE_DR', array(
-                    'label' => 'Balance DR',
-					'id' => 'LBL_BALANCE_DR',
-					'type'=>'text',
-					'onkeyup' => 'showHint(this.value)'
-             )); 
-            
+                    'label'=> 'Balance DR', 'id'=> 'LBL_BALANCE_DR', 'type'=>'text', 'onkeyup'=> 'showHint(this.value)'
+             ));
+
             echo $this->Form->input('LBL_BALANCE_CR', array(
-                    'label' => 'Balance CR',
-					'id' => 'LBL_BALANCE_CR',
-					'type'=>'text',
-             )); 
-			
-?>			
-			
-			
-			
-			
-	
-		  <script>
-			 /* $(VCH_DR_AMOUNT).mousedown(function(){	change_drcr('D')});	
-			  $(VCH_CR_AMOUNT).mousedown(function(){	change_drcr('C');});	
-			  
+                    'label'=> 'Balance CR', 'id'=> 'LBL_BALANCE_CR', 'type'=>'text', ));
+
+?>
+
+<script>
+			 /* $(VCH_DR_AMOUNT).mousedown(function(){	change_drcr('D')});
+			  $(VCH_CR_AMOUNT).mousedown(function(){	change_drcr('C');});
+
 			  $(VCH_DR_AMOUNT).keypress(function(){	change_drcr('D')});
 			  $(VCH_CR_AMOUNT).keypress(function(){	change_drcr('C')});
-			  
+
 			  $(VCH_DR_AMOUNT).change(function(){	change_drcr('D')});
 			  $(VCH_CR_AMOUNT).change(function(){	change_drcr('C')});
-			  
-			  
-			  $(CR_AMOUNT).mousedown(function(){	change_drcr('C');});	
-			  
+
+$(CR_AMOUNT).mousedown(function(){	change_drcr('C');});
+
 			  $(DR_AMOUNT).mousedown(function(){	change_drcr('D');});
-			  
+
 			  $(DR_AMOUNT).keypress(function(){	change_drcr('D')});
 			  $(CR_AMOUNT).keypress(function(){	change_drcr('C')});
-			  
+
 			  $(DR_AMOUNT).change(function(){	change_drcr('D')});
 			  $(CR_AMOUNT).change(function(){	change_drcr('C')});
-			  
-			  
-			  function change_drcr(opt)
+
+function change_drcr(opt)
 			  {
 				  var dr=$(VCH_DR_AMOUNT).val();
 				  var cr=$(VCH_CR_AMOUNT).val();
 				  var debit=$(DR_AMOUNT).val();
 				  var credit=$(CR_AMOUNT).val();
-			  
+
 				  if (opt=='C')
 				  {
 					  if (cr!='')
@@ -115,28 +88,27 @@
 					  {
 						  $(VCH_CR_AMOUNT).attr('readonly', false);
 						  $(DR_AMOUNT).attr('readonly', false);
-					  
+
 					  }
 				  }
 			  }*/
-			  
-		  </script>
-		  		  
+</</script>
+
 		  <script>
-			 /* $(DR_AMOUNT).mousedown(function(){	change_debcre('Debit')});	
-			  $(CR_AMOUNT).mousedown(function(){	change_debcre('Credit');});	
-			  
+			 /* $(DR_AMOUNT).mousedown(function(){	change_debcre('Debit')});
+			  $(CR_AMOUNT).mousedown(function(){	change_debcre('Credit');});
+
 			  $(DR_AMOUNT).keypress(function(){	change_debcre('Debit')});
 			  $(CR_AMOUNT).keypress(function(){	change_debcre('Credit')});
-			  
+
 			  $(DR_AMOUNT).change(function(){	change_debcre('Debit')});
 			  $(CR_AMOUNT).change(function(){	change_debcre('Credit')});
-			  
+
 			  function change_debcre(op)
 			  {
 				  var deb=$(DR_AMOUNT).val();
 				  var cre=$(CR_AMOUNT).val();
-					  
+
 				  if (op=='Credit')
 				  {
 					  if (cre!='')
@@ -161,12 +133,12 @@
 						  $(CR_AMOUNT).attr('readonly', false);
 					  }
 				  }
-			  
+
 			  }*/
-		  </script>
+</</script>
 
 		  <!--<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>-->
-          
+
           <script type="text/javascript">
 			  $(document).ready(function()
 			  {
@@ -176,8 +148,7 @@
 						  $('#div1').css({'display':'none'});
 						  $('#div2').slideDown(); // or try "fadeIn()"
 						  $('#button').attr;
-					  }, 
-					  function() 
+					  }, function()
 					  {
 						  $('#div2').css({'display':'none'});
 						  $('#div1').slideDown(); // or try "fadeIn()"
@@ -185,26 +156,15 @@
 					  }
 				  );
 			  });
-          </script>
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-	<?php			
+</</script>
+
+<?php
 			echo '<div style="clear:both"></div>';
 
 			echo '<div class="button">';
 				echo $this->Form->button('Create', array('class'=>'custom_submit'));
-			echo '</div>'; 
-			
+			echo '</div>';
+
 		echo $this->Form->end();
 	?>
 </div></div></div></div>

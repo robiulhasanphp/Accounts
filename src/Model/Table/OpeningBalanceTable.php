@@ -1,4 +1,5 @@
-<?php
+﻿<?php
+
 namespace App\Model\Table;
 
 use Cake\ORM\Table;
@@ -9,27 +10,22 @@ class OpeningBalanceTable extends Table
 
     public function initialize(array $config)
     {
-		$this->Table('ledger_balance');
-		$this->belongsTo('Ledgers',[
-			  'foreignKey' => 'LDG_ID'
+        $this->Table('ledger_balance');
+        $this->belongsTo('Ledgers',[
+              'foreignKey' => 'LDG_ID'
         ]);
- 		$this->belongsTo('Project',[
+         $this->belongsTo('Project',[
            'foreignKey' => 'VDT_PROJECT',
         ]);
-		 $this->belongsTo('Department',[
-			  'foreignKey' => 'VDT_DEPARTMENT'
+         $this->belongsTo('Department',[
+              'foreignKey' => 'VDT_DEPARTMENT'
         ]);
-		$this->belongsTo('Ledgerstype');
-		
+        $this->belongsTo('Ledgerstype');
 
-		$this->belongsTo('vouchers', [
+$this->belongsTo('vouchers', [
             'foreignKey' => 'VCH_ID',
         ]);
     }
-	
-	
-	
-	
-	
+
 }
 ?>

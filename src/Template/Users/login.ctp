@@ -1,14 +1,8 @@
-
-
-<div class="content_inner">
-
+﻿<div class="content_inner">
 
 <div class="login_box" >
 
-<p style="padding-left:12px; color:#030" align="right"><?php echo $this->Html->link("Register for New user ",
-array('controller' => 'Users', 'action' => 'add')); ?></p>
-
-
+<p style="padding-left:12px; color:#030" align="right"><?php echo $this->Html->link("Register for New user ", array('controller'=> 'Users', 'action'=> 'add')); ?></p>
 
 <h3 style="padding-left:150px;margin-top:-10px;color:#CCC">Authentication</h3>
 
@@ -22,8 +16,8 @@ array('controller' => 'Users', 'action' => 'add')); ?></p>
 
         <?= $this->Form->input('username') ?>
         <?= $this->Form->input('password') ?>
-    </fieldset>
-<?php 
+</</fieldset>
+<?php
   	echo '<div class="button">';
       echo $this->Form->button('Login', array('class'=>'custom_submit'));
   	echo '</div>';

@@ -1,124 +1,125 @@
-<?php
-	namespace App\Controller;
-	
+﻿<?php
+declare(strict_types=1);
+namespace App\Controller;
+
 use App\Controller\AppController;
-use Cake\Event\Event;
-use Cake\Network\Exception\NotFoundException;
-	
+use Cake\Http\Exception\NotFoundException;
 
-	
-	class  DesignationController extends AppController{
-		
-/*		var $uses=array ('CompanyRoot', 'CompanyInfo', 'CompanyBranch');
-		public $helpers = array('Html', 'Form', 'Session');
-		public $components = array('Session');*/
-		
-
-		
-		
-		
-		public function index(){
-			
-	$Designation = $this->Designation->find('all')
-	 ->where(['BAS_TYPE_ID' =>2]);
-        $this->set(compact('Designation'));
-		
-	
-   
-	
-		}
-		
-		
-	  public function view($BAS_ID)
+class DesignationController extends AppController
+{
+    /**
+     * List all designations
+     */
+    public function index(): void
     {
-        if (!$BAS_ID) 
-		{
-            throw new NotFoundException(__('Invalid Designation'));
+        $designationTable = $this->fetchTable('Designation');
+        $designation = $designationTable->find()
+            ->where(['BAS_TYPE_ID' => 2])
+            ->all();
+
+        $this->set(compact('designation'));
+    }
+
+    /**
+     * Display single designation
+     */
+    public function view(int $id)
+    {
+        if (!$id) {
+            throw new NotFoundException(__('Invalid designation'));
         }
 
-        $Designation = $this->Designation->get($BAS_ID);
-        $this->set(compact('Designation'));
+        $designationTable = $this->fetchTable('Designation');
+        $designation = $designationTable->get($id);
+        $this->set(compact('designation'));
     }
-		
-		
-	  public function add()
+
+    /**
+     * Create new designation
+     */
+    public function add()
     {
-        $Designation = $this->Designation->newEntity();
+        $designationTable = $this->fetchTable('Designation');
+        $designation = $designationTable->newEmptyEntity();
+
         if ($this->request->is('post')) {
-            $Designation = $this->Designation->patchEntity($Designation, $this->request->data);
-			$Designation->BAS_TYPE_ID=2;
-            if ($this->Designation->save($Designation)) {
-                $this->Flash->success(__('The user has been saved.'));
-               return $this->redirect(array('action' => 'index'));
+            $designation = $designationTable->patchEntity($designation, $this->request->getData());
+            $designation->BAS_TYPE_ID = 2;
+
+            if ($designationTable->save($designation)) {
+                $this->Flash->success(__('Designation created successfully'));
+                return $this->redirect(['action' => 'index']);
             }
-            $this->Flash->error(__('Unable to add the user.'));
+
+            $this->Flash->error(__('Failed to create designation'));
         }
-        $this->set('Designation', $Designation);
+
+        $this->set(compact('designation'));
     }
 
-
-		
-		
-public function edit($BAS_ID = null)
-{
-    $Designation = $this->Designation->get($BAS_ID);
-    if ($this->request->is(['post', 'put'])) {
-        $this->Designation->patchEntity($Designation, $this->request->data);
-		$Designation->BAS_TYPE_ID=4;
-        if ($this->Designation->save($Designation)) {
-            $this->Flash->success(__('Your article has been updated.'));
-            return $this->redirect(['action' => 'index']);
+    /**
+     * Edit designation
+     */
+    public function edit(int $id)
+    {
+        if (!$id) {
+            throw new NotFoundException(__('Invalid designation'));
         }
-        $this->Flash->error(__('Unable to update your article.'));
+
+        $designationTable = $this->fetchTable('Designation');
+        $designation = $designationTable->get($id);
+
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $designation = $designationTable->patchEntity($designation, $this->request->getData());
+            $designation->BAS_TYPE_ID = 2;
+
+            if ($designationTable->save($designation)) {
+                $this->Flash->success(__('Designation updated successfully'));
+                return $this->redirect(['action' => 'index']);
+            }
+
+            $this->Flash->error(__('Failed to update designation'));
+        }
+
+        $this->set(compact('designation'));
     }
 
-    $this->set('Designation', $Designation);
-}
+    /**
+     * Delete designation
+     */
+    public function delete(int $id)
+    {
+        $this->request->allowMethod(['post', 'delete']);
 
-	
-	
-		public function delete($BAS_ID = null)
-{
-    $Designation = $this->Designation->get($BAS_ID);
-        $this->request->is(['post', 'delete']);
-        if ($this->Designation->delete($Designation)) {
-            $this->Flash->success('The user has been deleted.');
+        if (!$id) {
+            throw new NotFoundException(__('Invalid designation'));
+        }
+
+        $designationTable = $this->fetchTable('Designation');
+        $designation = $designationTable->get($id);
+
+        if ($designationTable->delete($designation)) {
+            $this->Flash->success(__('Designation deleted successfully'));
         } else {
-            $this->Flash->error('The user could not be deleted. Please, try again.');
+            $this->Flash->error(__('Failed to delete designation'));
         }
+
         return $this->redirect(['action' => 'index']);
     }
-	
-	
-	
-	
-	
-	public function isAuthorized($user)
-{
-    // All registered users can add articles
-    if ($this->request->action === 'add') 
-	{
-        return true;
-    }
 
-    // The owner of an article can edit and delete it
-  /*  if (in_array($this->request->action, ['edit', 'delete']))
-	 {
-        $articleId = (int)$this->request->params['pass'][0];
-        if ($this->Articles->isOwnedBy($articleId, $user['id'])) 
-		{
+    /**
+     * Check user authorization
+     */
+    public function isAuthorized($user): bool
+    {
+        if ($this->request->getParam('action') === 'add') {
             return true;
         }
-    }*/
 
-    return parent::isAuthorized($user);
+        return parent::isAuthorized($user);
+    }
 }
-	
-	
-		
-		
-		
-		
-	}
 
-?>
+
+
+

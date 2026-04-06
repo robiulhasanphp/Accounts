@@ -1,9 +1,7 @@
-<!-- src/Template/Users/add.ctp -->
+﻿<!-- src/Template/Users/add.ctp -->
 <div class="content_inner">
 
 <div class="inner_box small">
-
-
 
 <h4 class="inner_title"> Create Ledger Category </h4>
 <div style="clear:both"></div>
@@ -11,19 +9,15 @@
 <div class="add_box">
 <?= $this->Form->create($Ledgertypem) ?>
     <fieldset>
-        
+
         <?= $this->Form->input('LTM_NAME', array(
-            'label'=>'Category Name',
-			'type'=>'text'
+            'label'=>'Category Name', 'type'=>'text'
         )); ?>
         <?= $this->Form->input('LTM_SHORT', array(
-            'label'=>'Short Name',
-			'type'=>'text'
+            'label'=>'Short Name', 'type'=>'text'
         )); ?>
-		
-    
-   </fieldset>
-<?php 
+</</fieldset>
+<?php
   	echo '<div class="button">';
       echo $this->Form->button('Create', array('class'=>'custom_submit'));
   	echo '</div>';

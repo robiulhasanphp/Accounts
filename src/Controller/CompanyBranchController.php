@@ -1,112 +1,139 @@
-<?php
+﻿<?php
 declare(strict_types=1);
-
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Cake\Http\Exception\NotFoundException;
 
 class CompanyBranchController extends AppController
 {
+    /**
+     * List all company branches
+     */
     public function index(): void
     {
-        $companyBranch = $this->CompanyBranch->find()->all();
+        $companyBranchTable = $this->fetchTable('CompanyBranch');
+        $companyBranch = $companyBranchTable->find()->all();
         $this->set(compact('companyBranch'));
     }
 
+    /**
+     * Display single company branch
+     */
     public function view(int $id): void
     {
-        $companyBranch = $this->CompanyBranch->get($id);
+        if (!$id) {
+            throw new NotFoundException(__('Invalid branch'));
+        }
+
+        $companyBranchTable = $this->fetchTable('CompanyBranch');
+        $companyBranch = $companyBranchTable->get($id);
         $this->set(compact('companyBranch'));
     }
 
+    /**
+     * Show branches for selected company
+     */
     public function showBranch(int $companyId): void
     {
-        $companyBranch = $this->CompanyBranch->find()
+        $companyBranchTable = $this->fetchTable('CompanyBranch');
+        $companyBranch = $companyBranchTable->find()
             ->where(['CMP_ID' => $companyId])
             ->all();
 
         $this->set(compact('companyBranch'));
     }
 
+    /**
+     * Create new company branch
+     */
     public function add()
     {
-        $companyBranch = $this->CompanyBranch->newEmptyEntity();
+        $companyBranchTable = $this->fetchTable('CompanyBranch');
+        $companyBranch = $companyBranchTable->newEmptyEntity();
 
-        $companyInfo = $this->CompanyBranch->CompanyInfo
-            ->find('list', [
-                'keyField' => 'CMP_ID',
-                'valueField' => 'CMP_NAME'
-            ])
-            ->toArray();
+        $companyInfoTable = $this->fetchTable('CompanyInfo');
+        $companyInfo = $companyInfoTable->find('list', [
+            'keyField' => 'CMP_ID',
+            'valueField' => 'CMP_NAME'
+        ])->toArray();
 
         if ($this->request->is('post')) {
-
-            $companyBranch = $this->CompanyBranch->patchEntity(
+            $companyBranch = $companyBranchTable->patchEntity(
                 $companyBranch,
                 $this->request->getData()
             );
 
-            if ($this->CompanyBranch->save($companyBranch)) {
-                $this->Flash->success('Saved successfully');
-                return $this->redirect([
-                    'controller' => 'CompanyRoot',
-                    'action' => 'index'
-                ]);
+            if ($companyBranchTable->save($companyBranch)) {
+                $this->Flash->success(__('Branch created successfully'));
+                return $this->redirect(['controller' => 'CompanyRoot', 'action' => 'index']);
             }
 
-            $this->Flash->error('Save failed');
+            $this->Flash->error(__('Failed to create branch'));
         }
 
         $this->set(compact('companyBranch', 'companyInfo'));
     }
 
+    /**
+     * Edit company branch
+     */
     public function edit(int $id)
     {
-        $companyBranch = $this->CompanyBranch->get($id);
+        if (!$id) {
+            throw new NotFoundException(__('Invalid branch'));
+        }
 
-        $companyInfo = $this->CompanyBranch->CompanyInfo
-            ->find('list', [
-                'keyField' => 'CMP_ID',
-                'valueField' => 'CMP_NAME'
-            ])
-            ->toArray();
+        $companyBranchTable = $this->fetchTable('CompanyBranch');
+        $companyBranch = $companyBranchTable->get($id);
+
+        $companyInfoTable = $this->fetchTable('CompanyInfo');
+        $companyInfo = $companyInfoTable->find('list', [
+            'keyField' => 'CMP_ID',
+            'valueField' => 'CMP_NAME'
+        ])->toArray();
 
         if ($this->request->is(['patch', 'post', 'put'])) {
-
-            $companyBranch = $this->CompanyBranch->patchEntity(
+            $companyBranch = $companyBranchTable->patchEntity(
                 $companyBranch,
                 $this->request->getData()
             );
 
-            if ($this->CompanyBranch->save($companyBranch)) {
-                $this->Flash->success('Updated successfully');
-                return $this->redirect([
-                    'controller' => 'CompanyRoot',
-                    'action' => 'index'
-                ]);
+            if ($companyBranchTable->save($companyBranch)) {
+                $this->Flash->success(__('Branch updated successfully'));
+                return $this->redirect(['controller' => 'CompanyRoot', 'action' => 'index']);
             }
 
-            $this->Flash->error('Update failed');
+            $this->Flash->error(__('Failed to update branch'));
         }
 
         $this->set(compact('companyBranch', 'companyInfo'));
     }
 
+    /**
+     * Delete company branch
+     */
     public function delete(int $id)
     {
         $this->request->allowMethod(['post', 'delete']);
 
-        $companyBranch = $this->CompanyBranch->get($id);
-
-        if ($this->CompanyBranch->delete($companyBranch)) {
-            $this->Flash->success('Deleted successfully');
-        } else {
-            $this->Flash->error('Delete failed');
+        if (!$id) {
+            throw new NotFoundException(__('Invalid branch'));
         }
 
-        return $this->redirect([
-            'controller' => 'CompanyRoot',
-            'action' => 'index'
-        ]);
+        $companyBranchTable = $this->fetchTable('CompanyBranch');
+        $companyBranch = $companyBranchTable->get($id);
+
+        if ($companyBranchTable->delete($companyBranch)) {
+            $this->Flash->success(__('Branch deleted successfully'));
+        } else {
+            $this->Flash->error(__('Failed to delete branch'));
+        }
+
+        return $this->redirect(['controller' => 'CompanyRoot', 'action' => 'index']);
     }
 }
+
+
+
+

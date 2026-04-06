@@ -1,8 +1,6 @@
-<div class="content_inner">
+﻿<div class="content_inner">
 
 <div class="inner_box small">
-
-
 
 <h4 class="inner_title"> Edit Ledger Category </h4>
 <div style="clear:both"></div>
@@ -12,23 +10,20 @@
     <fieldset>
 <?php
     echo $this->Form->create($Ledgertypem);
-    echo $this->Form->input('LTM_ID', array('type' => 'hidden'));
+    echo $this->Form->input('LTM_ID', array('type'=> 'hidden'));
     echo $this->Form->input('LTM_NAME', array(
-            'label'=>'Nane',
-			'type'=>'text'
+            'label'=>'Nane', 'type'=>'text'
         ));
 	echo $this->Form->input('LTM_SHORT', array(
-            'label'=>'Short',
-			'type'=>'text'
+            'label'=>'Short', 'type'=>'text'
         ));
 	echo $this->Form->input('LTM_FLAG', array(
-            'label'=>'Flag',
-			'type'=>'text'
+            'label'=>'Flag', 'type'=>'text'
         ));
-		
+
 		?>
-     </fieldset>
-<?php 
+</</fieldset>
+<?php
   	echo '<div class="button">';
       echo $this->Form->button('Update', array('class'=>'custom_submit'));
   	echo '</div>';

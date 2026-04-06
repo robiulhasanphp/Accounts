@@ -1,36 +1,28 @@
-<?php
-	namespace App\Controller;
-	
+﻿<?php
+declare(strict_types=1);
+namespace App\Controller;
+
 use App\Controller\AppController;
-use Cake\Event\Event;
-use Cake\Network\Exception\NotFoundException;
-	
-	
-	
+use Cake\Event\EventInterface;
+use Cake\Http\Exception\NotFoundException;
+
 	class  VoucherstatusController extends AppController{
-		
+
 /*		var $uses=array ('CompanyRoot', 'CompanyInfo', 'CompanyBranch');
 		public $helpers = array('Html', 'Form', 'Session');
 		public $components = array('Session');*/
-		
 
-		
-		
-		
 		public function index(){
-			
+
 	$Voucherstatus = $this->Voucherstatus->find('all')
             ->where(['BAS_TYPE_ID' => 7]);
         $this->set(compact('Voucherstatus'));
-	
-   
-	
+
 		}
-		
-		
+
 	  public function view($BAS_ID)
     {
-        if (!$BAS_ID) 
+        if (!$BAS_ID)
 		{
             throw new NotFoundException(__('Invalid user'));
         }
@@ -38,8 +30,7 @@ use Cake\Network\Exception\NotFoundException;
         $Voucherstatus = $this->Voucherstatus->get($BAS_ID);
         $this->set(compact('Voucherstatus'));
     }
-		
-		
+
 	  public function add()
     {
         $Voucherstatus = $this->Voucherstatus->newEntity();
@@ -55,9 +46,6 @@ use Cake\Network\Exception\NotFoundException;
         $this->set('Voucherstatus', $Voucherstatus);
     }
 
-
-		
-		
 public function edit($BAS_ID = null)
 {
     $Voucherstatus = $this->Voucherstatus->get($BAS_ID);
@@ -74,8 +62,6 @@ public function edit($BAS_ID = null)
     $this->set('Voucherstatus', $Voucherstatus);
 }
 
-	
-	
 		public function delete($BAS_ID = null)
 {
     $Voucherstatus = $this->Voucherstatus->get($BAS_ID);
@@ -87,15 +73,11 @@ public function edit($BAS_ID = null)
         }
         return $this->redirect(['action' => 'index']);
     }
-	
-	
-	
-	
-	
+
 	public function isAuthorized($user)
 {
     // All registered users can add articles
-    if ($this->request->action === 'add') 
+    if ($this->request->action === 'add')
 	{
         return true;
     }
@@ -104,7 +86,7 @@ public function edit($BAS_ID = null)
   /*  if (in_array($this->request->action, ['edit', 'delete']))
 	 {
         $articleId = (int)$this->request->params['pass'][0];
-        if ($this->Articles->isOwnedBy($articleId, $user['id'])) 
+        if ($this->Articles->isOwnedBy($articleId, $user['id']))
 		{
             return true;
         }
@@ -112,12 +94,11 @@ public function edit($BAS_ID = null)
 
     return parent::isAuthorized($user);
 }
-	
-	
-		
-		
-		
-		
+
 	}
 
 ?>
+
+
+
+

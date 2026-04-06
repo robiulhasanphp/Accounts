@@ -1,410 +1,116 @@
-<?php
-	namespace App\Controller;
-	
-	
-	class  GLController extends AppController{
-		
+﻿<?php
+declare(strict_types=1);
+namespace App\Controller;
 
-		
-		
-		
-		public function index()
-		{
-			
-		
-		
-				$query=$this->GL->Ledgers->find('list',['keyField' => 'LDG_ID','valueField' => 'LDG_NAME'])		->order(['LDG_NAME' =>'ASC']);;
-			
-				$LDG_name = $query->toArray();
-		
-				 $this->set(compact('LDG_name'));
-				 
-				 
-				 
-	
+use App\Controller\AppController;
+use Cake\Http\Exception\NotFoundException;
 
-if ($this->request->is(['post','put'])) 
-		
-			{
-
-		
-					
-		
-	 
-		 $id=($this->request->data["name"]);
-		 
-		
-
-/*search code*/
-
-
-		$query=$this->GL->LedgerClosing->find('all')
-		->where(['LDG_ID' =>$id]);
-
-		$end_balance = $query->toArray();
-		$this->set(compact('end_balance'));
-
-/*ladger balance data*/
-		
-		 if (isset($end_balance["0"]["LDG_BAL_PERIOD"]))
-			{
-			
-				
-				$last_dr=$end_balance["0"]["LDG_BALANCE_DR"];
-				$last_cr=$end_balance["0"]["LDG_BALANCE_CR"];
-				$last_balance_date=$end_balance["0"]["LDG_BAL_PERIOD"];
-			}
-		
-			else
-			{
-				$last_dr=0;
-				$last_cr=0;
-				$last_balance_date=0;
-			}
-		
-		
-		
-
-
-
-/*end*/	
-
-
-
-			$date_from=($this->request->data["date_from"]);
-			
-			
-			
-			$date_1 = explode('-', $date_from);
-			$d = $date_1[0];
-			$m = $date_1[1];
-			$y = $date_1[2];
-			$from_date = $y.'-'.$m.'-'.$d;
-
-/*step 2*/					
-
-			$start_date = ("{$y}-{$m}-01");
-			
-		
-		
-		/*	
-			$day=$d-1;
-			
-			$last_date=("{$y}-{$m}-{$day}");
-			
-			
-			*/
-		$last_date=date('Y-m-d', strtotime('-1 day', strtotime($from_date)));
-			
-			
-			$date_last = explode('-', $last_date);
-			$d = $date_last[2];
-			$m = $date_last[1];
-			$y = $date_last[0];
-			$before_last_date = $d.'-'.$m.'-'.$y;
-			
-			
-				$this->set(compact('before_last_date'));
-				
-				
-
-/*end*/	
-
-
-			$date_to=($this->request->data["date_to"]);
-			
-			$date_2 = explode('-', $date_to);
-			$d = $date_2[0];
-			$m = $date_2[1];
-			$y = $date_2[2];
-			$to_date = $y.'-'.$m.'-'.$d;
-/*step 3*/
-
-			
-			$date_between_1=$from_date;	
-			$date_between_1=$to_date;
-
-
-/*end*/						
-
-/*
-			
-			$query = $this->GL->find();
-			$query->select(['t_salary' => $query->func()->sum('VDT_DEBIT')])
-			->where(['VDT_LDG_ID' =>$id])
-			->andWhere(['VDT_DATE >=' =>$start_date])
-			->andWhere(['VDT_DATE <=' =>$last_date]);
-			$total_salary=$query->toArray();
-			$this->set(compact('total_salary'));
-			
-			$voucher_month_first_debit=$total_salary[0]->t_salary;
-			
-			$this->set(compact('voucher_month_first_debit'));
-
-
-			
-			$query = $this->GL->find();
-			$query->select(['t_salary' => $query->func()->sum('VDT_CREDIT')])
-			->where(['VDT_LDG_ID' =>$id])
-			->andWhere(['VDT_DATE >=' =>$start_date])
-			->andWhere(['VDT_DATE <=' =>$last_date]);
-			$total_salary=$query->toArray();
-			$this->set(compact('total_salary'));
-			
-			$voucher_month_second_credit=$total_salary[0]->t_salary;
-			
-			$this->set(compact('voucher_month_second_credit'));
-
-
-
-
-
-		$up_to_lastbalance_debit=$last_dr+$voucher_month_first_debit;
-		$this->set(compact('up_to_lastbalance_debit'));
-		
-		
-		$up_to_lastbalance_credit=$last_cr+$voucher_month_second_credit;
-		$this->set(compact('up_to_lastbalance_credit'));
-		 
-		 
-		 
-			$query = $this->GL->find();
-			$query->select(['t_salary' => $query->func()->sum('VDT_DEBIT')])
-			->where(['VDT_LDG_ID' =>$id])
-			->andWhere(['VDT_DATE >=' =>$from_date])
-			->andWhere(['VDT_DATE <=' =>$to_date]);
-			$total_salary=$query->toArray();
-			$this->set(compact('total_salary'));
-			
-			$voucher_month_between_debit=$total_salary[0]->t_salary;
-			
-			$this->set(compact('voucher_month_first_debit'));
-			
-			
-
-
-			$query = $this->GL->find();
-			$query->select(['t_salary' => $query->func()->sum('VDT_CREDIT')])
-			->where(['VDT_LDG_ID' =>$id])
-			->andWhere(['VDT_DATE >=' =>$from_date])
-			->andWhere(['VDT_DATE <=' =>$to_date]);
-			$total_salary=$query->toArray();
-			$this->set(compact('total_salary'));*/
-			
-			$voucher_month_between_credit=0;//$total_salary[0]->t_salary;
-			
-			$this->set(compact('voucher_month_second_credit'));
-			
-			
-			 
-
-$total_voucher_debit=0;//$up_to_lastbalance_debit+$voucher_month_between_debit;
-
-$this->set(compact('total_voucher_debit'));
-
-
-$total_voucher_credit=0; //$up_to_lastbalance_credit+$voucher_month_between_credit;
-	
-$this->set(compact('total_voucher_credit'));	
-
-	
-	
-		
-		/* $query=$this->Ledgerbalance->find('list',['keyField' =>['VCH_ID'],'valueField' => 'VCH_ID'])
-		->where(['VDT_LDG_ID' =>$id])
-		->andWhere(['VDT_DATE >='=>$from_date])
-		->andWhere(['VDT_DATE <='=>$to_date]);
-
-		
-		 $vch_id = $query->toArray();*/
-		//var_dump($vch_id);
-		 
-	
-	//	->contain('vouchers')
-//		->Where(['vouchers.VCH_STATUS !=' =>STS_DELETED])
-		 $query=$this->GL->find('all')
-		->Where(['VDT_LDG_ID '=>$id])
-		->andWhere(['VDT_DATE >='=>$from_date])
-		->andWhere(['VDT_DATE <='=>$to_date])
-			->order(['VDT_DATE' =>'Asc']);     //->contain('Basicdata');
-		//$query->find('all')->contain('Project')->contain('Department')->contain("ledgers");*/
-		
-		 $vdt_id = $query->toArray();
-		 $this->set(compact('vdt_id'));
-		 
-		 
-		 
-		 
-		 /*
-				$query=$this->Ledgerbalance->Ledgers->find('all')
-				->where(['LDG_ID' =>$id]);
-				$LDG_ACC_TYPE = $query->toArray();
-				 $type=$LDG_ACC_TYPE["0"]["LDG_ACC_TYPE"];
-				 
-				 
-				  $this->set(compact('type'));*/
-				 
-
-
-	/*
-		$query = $this->Ledgerbalance->find()->contain('vouchers');
-		$query->select(['t_debit' => $query->func()->sum('VDT_DEBIT'),'t_credit' => $query->func()->sum('VDT_CREDIT')])
-		->where(['VDT_LDG_ID'=>$id])
-		->andWhere(['vouchers.VCH_STATUS !=' =>STS_DELETED]);
-//		->where(['VCH_ID IN' =>$vch_id]);
-		//->andwhere(['VDT_LDG_ID !='=>$id]);
-		$total_balance=$query->toArray();
-		$this->set(compact('total_balance'));
-		
-	*/
-	
-					
-					
-			
-			}
-		}
-		
-		
-	
-		
-		
-		
-		
-		
-		
-		
-		
-	  public function view($VCH_ID)
+class GLController extends AppController
+{
+    public function index()
     {
-        if (!$VCH_ID) 
-		{
-            throw new NotFoundException(__('Invalid user'));
+        $glTable = $this->fetchTable('GL');
+        $ledgersTable = $this->fetchTable('Ledgers');
+        $ledgerClosingTable = $this->fetchTable('LedgerClosing');
+
+        $ledgers = $ledgersTable->find('list', [
+            'keyField' => 'LDG_ID',
+            'valueField' => 'LDG_NAME'
+        ])
+        ->order(['LDG_NAME' => 'ASC'])
+        ->toArray();
+
+        $this->set(compact('ledgers'));
+
+        if (!$this->request->is(['post', 'put'])) {
+            return;
         }
-		
-	
-		 
-		
-		 $query=$this->Ledgerbalance->find('all')->contain('vouchers')
-		->where(['vouchers.VCH_ID IN' =>$VCH_ID]); //->contain('Basicdata');
-		
-		$query->find('all')->contain('Project')->contain('Department')->contain('Ledgers');
-		
-		 $vdt_id = $query->toArray();
-		 $this->set(compact('vdt_id'));
-		 
-		 
-		 
-		 
-		 
-		$query = $this->Ledgerbalance->find();
-		$query->select(['t_salary' => $query->func()->sum('VDT_DEBIT')])
-		->where(['VCH_ID IN' =>$VCH_ID]);
-		$total_debit=$query->toArray();
-		$this->set(compact('total_debit'));
 
-		$debit=$total_debit[0]->t_salary;
-		
-		$this->set(compact('debit'));
-		
-		 
-		 
-		
-		
-					$query = $this->Ledgerbalance->find();
-		$query->select(['t_salary' => $query->func()->sum('VDT_CREDIT')])
-		->where(['VCH_ID IN' =>$VCH_ID]);
-		$total_credit=$query->toArray();
-		$this->set(compact('total_credit'));
+        $data = $this->request->getData();
 
-		$credit=$total_credit[0]->t_salary;
-		
-		$this->set(compact('credit'));
-		
-		 
-		 
-		
-		
+        $ledgerId = $data['name'] ?? null;
+        $from = $this->formatDate($data['date_from'] ?? null);
+        $to = $this->formatDate($data['date_to'] ?? null);
+
+        if (!$ledgerId || !$from || !$to) {
+            $this->Flash->error('Invalid input');
+            return;
+        }
+
+        $closing = $ledgerClosingTable->find()
+            ->where(['LDG_ID' => $ledgerId])
+            ->first();
+
+        $openingDebit = $closing ? ($closing->LDG_BALANCE_DR ?? 0) : 0;
+        $openingCredit = $closing ? ($closing->LDG_BALANCE_CR ?? 0) : 0;
+
+        $entries = $glTable->find()
+            ->where([
+                'VDT_LDG_ID' => $ledgerId,
+                'VDT_DATE >=' => $from,
+                'VDT_DATE <=' => $to
+            ])
+            ->order(['VDT_DATE' => 'ASC'])
+            ->all();
+
+        $this->set(compact(
+            'entries',
+            'openingDebit',
+            'openingCredit',
+            'ledgerId',
+            'from',
+            'to'
+        ));
     }
-	
-	
-	
-	
-	
-	
-	 public function printer($VCH_ID)
+
+    public function view(int $id)
     {
-        if (!$VCH_ID) 
-		{
-            throw new NotFoundException(__('Invalid user'));
+        $ledgerbalanceTable = $this->fetchTable('Ledgerbalance');
+
+        $entries = $ledgerbalanceTable->find()
+            ->contain(['Vouchers', 'Project', 'Department', 'Ledgers'])
+            ->where(['VCH_ID' => $id])
+            ->all();
+
+        if ($entries->isEmpty()) {
+            throw new NotFoundException('Voucher not found');
         }
-		
-	
-		 
-		
-		 $query=$this->Ledgerbalance->find('all')->contain('vouchers')
-		->where(['vouchers.VCH_ID IN' =>$VCH_ID]); //->contain('Basicdata');
-		
-		$query->find('all')->contain('Project')->contain('Department')->contain('Ledgers');
-		
-		 $vdt_id = $query->toArray();
-		 $this->set(compact('vdt_id'));
-		 
-		 
-		 
-		 
-		 
-		$query = $this->Ledgerbalance->find();
-		$query->select(['t_salary' => $query->func()->sum('VDT_DEBIT')])
-		->where(['VCH_ID IN' =>$VCH_ID]);
-		$total_debit=$query->toArray();
-		$this->set(compact('total_debit'));
 
-		$debit=$total_debit[0]->t_salary;
-		
-		$this->set(compact('debit'));
-		
-		 
-		 
-		
-		
-					$query = $this->Ledgerbalance->find();
-		$query->select(['t_salary' => $query->func()->sum('VDT_CREDIT')])
-		->where(['VCH_ID IN' =>$VCH_ID]);
-		$total_credit=$query->toArray();
-		$this->set(compact('total_credit'));
+        $query = $ledgerbalanceTable->find();
+        $totals = $query->select([
+            'debit' => $query->func()->sum('VDT_DEBIT'),
+            'credit' => $query->func()->sum('VDT_CREDIT')
+        ])
+        ->where(['VCH_ID' => $id])
+        ->first();
 
-		$credit=$total_credit[0]->t_salary;
-		
-		$this->set(compact('credit'));
-		
-		 
-		 
-		
-		
+        $this->set([
+            'entries' => $entries,
+            'debit' => $totals ? ($totals->debit ?? 0) : 0,
+            'credit' => $totals ? ($totals->credit ?? 0) : 0
+        ]);
     }
-		
-	
-	
-	
-	
-	
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-	}
 
-?>
+    public function printer(int $id)
+    {
+        return $this->view($id); // reuse logic
+    }
+
+    private function formatDate(?string $date): ?string
+    {
+        if (!$date) {
+            return null;
+        }
+
+        $parts = explode('-', $date);
+        if (count($parts) !== 3) {
+            return null;
+        }
+
+        return "{$parts[2]}-{$parts[1]}-{$parts[0]}";
+    }
+}
+
+
+
+

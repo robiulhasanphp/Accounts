@@ -1,35 +1,27 @@
-<?php
-	namespace App\Controller;
-	
+﻿<?php
+declare(strict_types=1);
+namespace App\Controller;
+
 use App\Controller\AppController;
-use Cake\Event\Event;
-use Cake\Network\Exception\NotFoundException;
-	
-	
-	
+use Cake\Event\EventInterface;
+use Cake\Http\Exception\NotFoundException;
+
 	class  LedgertypemController extends AppController{
-		
+
 /*		var $uses=array ('CompanyRoot', 'CompanyInfo', 'CompanyBranch');
 		public $helpers = array('Html', 'Form', 'Session');
 		public $components = array('Session');*/
-		
 
-		
-		
-		
 		public function index(){
-			
+
 	$Ledgertypem = $this->Ledgertypem->find('all');
         $this->set(compact('Ledgertypem'));
-	
-   
-	
+
 		}
-		
-		
+
 	  public function view($BAS_ID)
     {
-        if (!$BAS_ID) 
+        if (!$BAS_ID)
 		{
             throw new NotFoundException(__('Invalid user'));
         }
@@ -37,8 +29,7 @@ use Cake\Network\Exception\NotFoundException;
         $Ledgertypem = $this->Ledgertypem->get($BAS_ID);
         $this->set(compact('Ledgertypem'));
     }
-		
-		
+
 	  public function add()
     {
         $Ledgertypem = $this->Ledgertypem->newEntity();
@@ -54,9 +45,6 @@ use Cake\Network\Exception\NotFoundException;
         $this->set('Ledgertypem', $Ledgertypem);
     }
 
-
-		
-		
 public function edit($BAS_ID = null)
 {
     $Ledgertypem = $this->Ledgertypem->get($BAS_ID);
@@ -73,8 +61,6 @@ public function edit($BAS_ID = null)
     $this->set('Ledgertypem', $Ledgertypem);
 }
 
-	
-	
 		public function delete($BAS_ID = null)
 {
     $Ledgertypem = $this->Ledgertypem->get($BAS_ID);
@@ -86,15 +72,11 @@ public function edit($BAS_ID = null)
         }
         return $this->redirect(['action' => 'index']);
     }
-	
-	
-	
-	
-	
+
 	public function isAuthorized($user)
 {
     // All registered users can add articles
-    if ($this->request->action === 'add') 
+    if ($this->request->action === 'add')
 	{
         return true;
     }
@@ -103,7 +85,7 @@ public function edit($BAS_ID = null)
   /*  if (in_array($this->request->action, ['edit', 'delete']))
 	 {
         $articleId = (int)$this->request->params['pass'][0];
-        if ($this->Articles->isOwnedBy($articleId, $user['id'])) 
+        if ($this->Articles->isOwnedBy($articleId, $user['id']))
 		{
             return true;
         }
@@ -111,12 +93,11 @@ public function edit($BAS_ID = null)
 
     return parent::isAuthorized($user);
 }
-	
-	
-		
-		
-		
-		
+
 	}
 
 ?>
+
+
+
+

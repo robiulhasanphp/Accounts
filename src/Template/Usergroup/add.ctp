@@ -1,9 +1,7 @@
-<!-- src/Template/Users/add.ctp -->
+﻿<!-- src/Template/Users/add.ctp -->
 <div class="content_inner">
 
 <div class="inner_box small">
-
-
 
 <h4 class="inner_title"> Creat New User Group </h4>
 <div style="clear:both"></div>
@@ -14,21 +12,17 @@
     <fieldset>
 <hr/>
         <?= $this->Form->input('BAS_CODE', array(
-            'label'=>'Group Code',
-			'type'=>'text'
+            'label'=>'Group Code', 'type'=>'text'
         )); ?>
         <?= $this->Form->input('BAS_NAME', array(
-            'label'=>'User Group',
-			'type'=>'text'
+            'label'=>'User Group', 'type'=>'text'
         )); ?>
 		<?= $this->Form->input('BAS_DESCRIPTION', array(
-            'label'=>'Description',
-			'type'=>'text'
+            'label'=>'Description', 'type'=>'text'
         )); ?>
-    
-   </fieldset>
+</</fieldset>
 
-<?php 
+<?php
   	echo '<div class="button">';
       echo $this->Form->button('Create', array('class'=>'custom_submit'));
   	echo '</div>';

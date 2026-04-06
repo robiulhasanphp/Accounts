@@ -1,4 +1,5 @@
-<?php
+﻿<?php
+declare(strict_types=1);
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -15,7 +16,7 @@
 namespace App\Controller;
 
 use Cake\Core\Configure;
-use Cake\Network\Exception\NotFoundException;
+use Cake\Http\Exception\NotFoundException;
 use Cake\View\Exception\MissingTemplateException;
 
 /**
@@ -63,3 +64,7 @@ class PagesController extends AppController
         }
     }
 }
+
+
+
+

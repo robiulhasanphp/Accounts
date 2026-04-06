@@ -1,159 +1,97 @@
-<div class="content_inner">
+﻿<div class="content_inner">
 
 <div class="inner_box big" style="width:900px;" >
 
-
-
 <h4 class="inner_title">New Reciept</h4>
 <div style="clear:both;"></div>
-
 
 <h5 style='color:green;float:right;background:#ddd;padding:5px;margin-top:-35px;border-radius:3px'><?= $this->Flash->render() ?></h5>
 <div style="border:1px solid #ccc;margin:auto;padding: 20px 10px;">
     <?php
         echo $this->Form->create($Recieve);
-		
+
                   ?> <div class="proj_dep">
-                          <?=$this->Form->input('VCH_PROJECT',               
-                        [   
-             
-                        'options' => $project,
-                        'type'=>'select',
-                        'class'=>'inp_select',
-                        'label'	=> 'Project',
-            
-                    ]);   
+                          <?=$this->Form->input('VCH_PROJECT', ['options'=> $project, 'type'=>'select', 'class'=>'inp_select', 'label'=> 'Project', ]);
                     ?>
-						<?=$this->Form->input('VCH_DEPARTMENT',               
-                        [   
-             
-                        'options' => $department,
-                        'type'=>'select',
-                        'class'=>'inp_select',
-                        'label'	=> 'Department',
-            
-                    ]);   
+						<?=$this->Form->input('VCH_DEPARTMENT', ['options'=> $department, 'type'=>'select', 'class'=>'inp_select', 'label'=> 'Department', ]);
                     ?>
-				</div>
+</</div>
                 <?php
-			
-			
-			echo '<div class="clr"></div>';
-			
-			
-			?> <div class="proj_dep"><?php
+
+echo '<div class="clr"></div>';
+
+?> <div class="proj_dep"><?php
 					echo $this->Form->input('pay_date', array(
-						'label' => 'Reciept Date',
-						'id' => 'birthday',
-						'class'=>'inp_select',
-						'Placeholder' => 'Reciept Date',
-					));
+						'label'=> 'Reciept Date', 'id'=> 'birthday', 'class'=>'inp_select', 'Placeholder'=> 'Reciept Date', ));
 					echo $this->Form->input('VCH_MR_NO', array(
-						'label' => 'MR No',
-						'class'=>'inp_select',
-						'Placeholder' => 'MR No'						
+						'label'=> 'MR No', 'class'=>'inp_select', 'Placeholder'=> 'MR No'
 					));?>
-				</div>
-               
-			
+</</div>
+
 <div class="clr"></div>
 		 <div class="proj_dep">
-         
-			 <?php echo $this->Form->input('VCH_CR_ACCOUNTS',               
-				[   
-				  'style'=>'width:400px;float:left',
-				 'label' => 'Reciept From',
-				 'options' => $paid_to,
-				 'type'=>'select',
-				 'selected'=>'selected'
-						
-			]);  
-			
+
+			 <?php echo $this->Form->input('VCH_CR_ACCOUNTS', ['style'=>'width:400px;float:left', 'label'=> 'Reciept From', 'options'=> $paid_to, 'type'=>'select', 'selected'=>'selected'
+
+			]);
+
 		?>
-        </div>
+</</div>
 
 			<div class="clr"></div>
 
-		
-		 <div class="proj_dep">
+<div class="proj_dep">
 		 <?php
 					echo $this->Form->input('VCH_CHALLAN_NO', array(
-						'label' => 'Check No',
-						'class'=>'inp_select',
-						'Placeholder' => 'Cheque Nos'
+						'label'=> 'Check No', 'class'=>'inp_select', 'Placeholder'=> 'Cheque Nos'
 					));
-					
+
 					echo $this->Form->input('check_date', array(
-						'label' => 'Date',
-						'class'=>'inp_select',
-						'id' => 'chalan_date',
-						'Placeholder' => 'Chueque Dates'
+						'label'=> 'Date', 'class'=>'inp_select', 'id'=> 'chalan_date', 'Placeholder'=> 'Chueque Dates'
 					));
 			?>
-			</div>
+</</div>
 
-		
-			<div class="clr"></div>
-		
-		
+<div class="clr"></div>
+
 <?php		echo '<div class="radio_all">';
 				echo '<p>Reciept Mode :</p>';
-				
 
-
-
-				
-				
-				echo $this->Form->radio(
-					'payment_mode', 						
-					[
-						['value' => '0', 'checked'=>'checked', 'text' => 'Cash', 'id' => 'pmode_c','style' => 'color:blue; margin-top:-2px;width:100px;float:left'],
-						['value' => '2', 'text' => 'Cheque', 'id' => 'pmode','style' => 'color:blue; margin-top:-2px;width:100px;float:left'],
-					]
+echo $this->Form->radio(
+					'payment_mode', [['value'=> '0', 'checked'=>'checked', 'text'=> 'Cash', 'id'=> 'pmode_c', 'style'=> 'color:blue; margin-top:-2px;width:100px;float:left'], ['value'=> '2', 'text'=> 'Cheque', 'id'=> 'pmode', 'style'=> 'color:blue; margin-top:-2px;width:100px;float:left'], ]
 				);
 
 			echo '</div>';
-?>			
+?>
  <div id="bank_list" class="proj_dep">
-	   <?php echo $this->Form->input('VCH_DR_ACCOUNTS',               
-				[   
-				 'style'=>'width:400px;float:left',
-				 'label' => 'Reciept To',
-				 'options' => $paid_to,
-				 'type'=>'select',
-				 'selected'=>'selected'
-			]);  
+	   <?php echo $this->Form->input('VCH_DR_ACCOUNTS', ['style'=>'width:400px;float:left', 'label'=> 'Reciept To', 'options'=> $paid_to, 'type'=>'select', 'selected'=>'selected'
+			]);
 		?>
-        </div>
-<div class="clr"></div>				
-<?php		
+</</div>
+<div class="clr"></div>
+<?php
             echo $this->Form->input('VCH_AMOUNT', array(
-				'label' => 'Recieved Amount',
-								'type' => 'text'
+				'label'=> 'Recieved Amount', 'type'=> 'text'
 			));
 ?>
 	<div class="clr"></div>
-<?php			
-			
-            echo $this->Form->input('VCH_NARRATION', 
-					[
-						'type' => 'text',
-						'label'=> 'Remarks'
+<?php
+
+            echo $this->Form->input('VCH_NARRATION', ['type'=> 'text', 'label'=> 'Remarks'
 					]
 				);
 ?>
 	<div class="clr"></div>
-<?php			
+<?php
 
 			echo '<div class="button">';
 			echo '<div style="width:70px;float:right;height:50px;">Continue Add';
-	  echo $this->Form->checkbox('CONTINUE',['checked'=>'checked']);
+	  echo $this->Form->checkbox('CONTINUE', ['checked'=>'checked']);
 echo '</div>';
 				echo $this->Form->button('Create Voucher', array('class'=>'custom_submit'));
-			echo '</div>'; 
-			
-			
-        echo $this->Form->end();
+			echo '</div>';
+
+echo $this->Form->end();
     ?>
    <div class="clr"></div>
 </div>
@@ -161,17 +99,17 @@ echo '</div>';
 </div>
 
 <script>
-	$('#bank_list').css('display','none');
+	$('#bank_list').css('display', 'none');
 	 $(pmode_c).click(function()
 	{
 		//alert("cash");
-		  $('#bank_list').css('display','none');
+		  $('#bank_list').css('display', 'none');
 	}
 	);
 	 $(pmode).click(function()
 	{
 		//alert("check");
-	  $('#bank_list').css('display','block');
-	
+	  $('#bank_list').css('display', 'block');
+
 	});
 </script>

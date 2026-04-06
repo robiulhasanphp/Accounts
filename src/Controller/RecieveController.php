@@ -1,141 +1,125 @@
-<?php
-	namespace App\Controller;
-	
+﻿<?php
+declare(strict_types=1);
+namespace App\Controller;
+
 	use App\Controller\AppController;
-	use Cake\Event\Event;
-	use Cake\Network\Exception\NotFoundException;
-	use Cake\ORM\TableRegistry;	
-	
-	
+	use Cake\Event\EventInterface;
+	use Cake\Http\Exception\NotFoundException;
+	use Cake\ORM\TableRegistry;
+
 	class RecieveController extends AppController{
-		
+
 		public function index(){
-			
+
 			$sdate='';
 			$edate='';
 
 			if ($this->request->is(['post','put']))
 			{
-				$sdate=$this->request->data['sdate'];
-				$edate=$this->request->data['edate'];
-				
+				$sdate=$this->request->getData()['sdate'];
+				$edate=$this->request->getData()['edate'];
+
 				$sdate=DateToDB($sdate.'-','-');
 				$edate=DateToDB($edate.'-','-');
-				
-			}
 
+			}
 
 		if (($sdate=='') || ($edate==''))
 			{
 				$sdate=date('Y-m-').'01';
-				$edate=date('Y-m-',strtotime("+1 month")).'01';	
+				$edate=date('Y-m-',strtotime("+1 month")).'01';
 				$date = date_create($edate);
 				date_add($date, date_interval_create_from_date_string('-1 days'));
-				$edate=date_format($date, 'Y-m-d');				
+				$edate=date_format($date, 'Y-m-d');
 			}
-			
+
 		$this->set('Recieve', $this->Recieve->find('all')
 		->where(['VCH_TYPE' =>VCH_TYPE_RECIEPT])
 		->andWhere(['VCH_DATE >=' =>$sdate])
 		->andWhere(['VCH_DATE <=' =>$edate])
 		->andWhere(['VCH_STATUS !=' =>STS_DELETED])
-		->order(['VCH_DATE' =>'DESC','VCH_ID' =>'DESC'])   ); 
-		
+		->order(['VCH_DATE' =>'DESC','VCH_ID' =>'DESC'])   );
+
 		    $this->set(compact('sdate'));
 		$this->set(compact('edate'));
-		
+
 		}
-		
+
 		public function view($id = null){
 			$Recieve = $this->Recieve->get($id);
 			$this->set(compact('Recieve'));
     	}
-		
-		
+
 		public function add(){
-				$user = $this->Auth->User();
-			
-		$Basicdata = TableRegistry::get('Basicdata');
+				$user = $this->Auth->user();
+
+		$Basicdata = $this->fetchTable(Basicdata;
 
 		$query=$Basicdata->find('list',['keyField' => ['BAS_ID'],'valueField' => 'BAS_NAME'])->where(['BAS_TYPE_ID' =>5]);
 		$project = $query->toArray();
 		$this->set(compact('project'));
-		 
 
-		
 		$query=$Basicdata->find('list',['keyField' => ['BAS_ID'],'valueField' => 'BAS_NAME'])->where(['BAS_TYPE_ID' =>4]);
 		$department = $query->toArray();
 		$this->set(compact('department'));
-		
+
 		$query=$this->Recieve->Ledgerstype->find('list',['keyField' => ['LDG_ID'],'valueField' => 'LDG_ID']);
-		
-		
-		
+
 		/*->where(['LTM_ID' =>4])
 		->orWhere(['LTM_ID' =>6])
 		->orWhere(['LTM_ID' =>7])
     	->orWhere(['LTM_ID' =>2]);
-	
+
 		$pur=$query->toArray();*/
-		
+
 		$query=$this->Recieve->Ledgers->find('list',['keyField' => ['LDG_ID'],'valueField' => 'LDG_NAME'])
 		->order(['LDG_NAME'=>'ASC']); //->where(['LDG_ID IN ' =>$pur]);
 		$paid_to = $query->toArray();
 		$this->set(compact('paid_to'));
-		
-		
-				
-	
-			
-			
-			
+
         $Recieve = $this->Recieve->newEntity();
         if ($this->request->is('post')) {
-			
+
 			$vdr_acc = ACC_CASH;
-			if ($this->request->data["payment_mode"]==2){
-				$vdr_acc =$this->request->data["VCH_DR_ACCOUNTS"];
+			if ($this->request->getData()["payment_mode"]==2){
+				$vdr_acc =$this->request->getData()["VCH_DR_ACCOUNTS"];
 			}
-			
-			$vcr_acc =$this->request->data["VCH_CR_ACCOUNTS"];
-			$amount=($this->request->data["VCH_AMOUNT"]);
-			
+
+			$vcr_acc =$this->request->getData()["VCH_CR_ACCOUNTS"];
+			$amount=($this->request->getData()["VCH_AMOUNT"]);
+
 			if ($vdr_acc==$vcr_acc )
 			{
 				        $this->set('Recieve', $Recieve);
-				            $this->Flash->error(__('You cannot select same account for Reciept'));				
+				            $this->Flash->error(__('You cannot select same account for Reciept'));
 							return;
 			}
-			
-			
+
 			if ($amount<=0)
 			{
 				        $this->set('Recieve', $Recieve);
-				            $this->Flash->error(__('Reciept Amount is not Correct'));				
+				            $this->Flash->error(__('Reciept Amount is not Correct'));
 							return;
 			}
-			
-			$ldg_table= TableRegistry::get('Ledgers');
+
+			$ldg_table= $this->fetchTable(Ledgers;
 			$ldg = $ldg_table->get($vdr_acc);
-			
+
 			$paid_to= $ldg->LDG_CODE;
 
 			$paid_to_name= $ldg->LDG_NAME;
-			
+
 			$ldg =$ldg_table->get($vcr_acc);
-			
+
 			$paid_from= $ldg->LDG_CODE;
 			$paid_from_name= $ldg->LDG_NAME;
-			
-				
-			$amount=($this->request->data["VCH_AMOUNT"]);
-			
+
+			$amount=($this->request->getData()["VCH_AMOUNT"]);
+
             $Recieve = $this->Recieve->patchEntity($Recieve, $this->request->data);
-			
-			
-			
+
 			$full_des=$paid_from.'(Cr), '.$paid_to.'(Dr)';
-//			$OfficeExpenses->VCH_DR_ACCOUNTS=ACC_CASH;			
+//			$OfficeExpenses->VCH_DR_ACCOUNTS=ACC_CASH;
 			$Recieve->VCH_DR_ACCOUNTS=$vdr_acc;
 			$Recieve->VCH_FULL_DESCRIPTION=$full_des;
 
@@ -145,21 +129,19 @@
 			//var_dump($Recieve);
 				//$vouchers->VCH_STATUS=0;
 
-				
 			$Recieve->VCH_STATUS=STS_CREATE;
 			$Recieve->VCH_CREATE_BY=$user['USR_ID'];
-			
+
 			$Recieve->VCH_TYPE=VCH_TYPE_RECIEPT;
 
 			$Recieve->VCH_STATUS_BY=$user['USR_ID'];
 			$Recieve->VCH_LAST_EDIT_BY=$user['USR_ID'];
 			$Recieve->VCH_SUBMIT_BY=$user['USR_ID'];
-			
-			$Recieve->VCH_DR_ACCOUNTS=$vdr_acc;
-		
 
-			$pay_date=$this->request->data('pay_date');
-			
+			$Recieve->VCH_DR_ACCOUNTS=$vdr_acc;
+
+			$pay_date=$this->request->getData('pay_date');
+
 			if(strlen($pay_date)>8)
 			{
 				$vch_date = explode('-', $pay_date);
@@ -169,138 +151,109 @@
 				$month = $m;
 				$year = $y;
 				$pay_date = $y.'-'.$m.'-'.$d;
-				
-				$Recieve->VCH_DATE=$pay_date;	
+
+				$Recieve->VCH_DATE=$pay_date;
 				$Recieve->VCH_MONTH=$m;
 				$Recieve->VCH_YEAR=$y;
 			}
 			else
 			{
 				        $this->set('Recieve', $Recieve);
-				            $this->Flash->error(__('Reciept Date is not specified'));				
+				            $this->Flash->error(__('Reciept Date is not specified'));
 							return;
-	
+
 			}
-			
-			$check_date = $this->request->data('check_date');
+
+			$check_date = $this->request->getData('check_date');
 			if(strlen($check_date)>8)
 			{
 			$Recieve->VCH_CHEQUE_DESC = DateToDB($check_date.'-','-');;
 			}
 
-				
 			$full_des=$paid_to.'(Dr), '.$paid_from.'(Cr)';
-			
+
 			$Recieve->VCH_FULL_DESCRIPTION=$full_des;
-			
+
 			//	$vouchers->VCH_FULL_DESCRIPTION=$full_des;
-			
-				
-				
-				
+
 				 if ($this->Recieve->save($Recieve)) {
 
-              
-
-				
 				$id = $Recieve->VCH_ID;  //data call from table
 				$new_id=$id;
-				
-						
 
 			$Recieve=$this->Recieve->get($id);
 			$vch_Full=$Recieve->VCH_NO_FULL;
 
 				//$VCH_AMOUNT = $Recieve->VCH_AMOUNT;
-				
-				
-				
-					
 
-				
 				 $Voucherdtl = $this->Recieve->Voucherdtl->newEntity();
-				 
+
 					$Voucherdtl->VCH_ID=$new_id;
 					$Voucherdtl->VDT_DATE=$pay_date;
 					$Voucherdtl->VDT_VOUCHER_NO=$vch_Full;
 					$Voucherdtl->VDT_LOT=1;
 					$Voucherdtl->VDT_SR=1;
 					$Voucherdtl->VDT_LDG_ID=$vcr_acc;
-					
+
 					$Voucherdtl->VDT_DEBIT=0;
 					$Voucherdtl->VDT_CREDIT=$amount;
 					$Voucherdtl->VDT_PROJECT=$project;
-					
+
 					$Voucherdtl->VDT_DEPARTMENT=$department;
 					$this->Recieve->Voucherdtl->save($Voucherdtl);
-					
-					
-					
-					
-					
+
 					$Voucherdt2 = $this->Recieve->Voucherdtl->newEntity();
-					
+
 					$Voucherdt2->VCH_ID=$new_id;
 					$Voucherdt2->VDT_DATE=$pay_date;
 					$Voucherdt2->VDT_VOUCHER_NO=$vch_Full;
 					$Voucherdt2->VDT_LOT=1;
 					$Voucherdt2->VDT_SR=2;
 					$Voucherdt2->VDT_LDG_ID=$vdr_acc;
-					
+
 					$Voucherdt2->VDT_DEBIT=$amount;
 					$Voucherdt2->VDT_CREDIT=0;
 					$Voucherdt2->VDT_PROJECT=$project;
-					
+
 					$Voucherdt2->VDT_DEPARTMENT=$department;
 					$this->Recieve->Voucherdtl->save($Voucherdt2);
-				
-				
-				
-				
-                          if ($this->request->data["CONTINUE"]!=0)
+
+                          if ($this->request->getData()["CONTINUE"]!=0)
 			  {
 				    $this->Flash->success(__('Voucher : '.$vch_Full.' [ Amount = '.$amount.']  has been saved.'));
 				  return $this->redirect(array('action' => 'add'));
-				  
+
 			  }
 			  else
 			  {
 				  return $this->redirect(array('action' => 'index'));
 			  }
 
-				
             }
             $this->Flash->error(__('Unable to add your article.'));
         }
         $this->set('Recieve', $Recieve);
     }
-	
-	
-	
-	
-	
-	
+
 	public function edit($id){
-				$user = $this->Auth->User();
-		$Basicdata = TableRegistry::get('Basicdata');
+				$user = $this->Auth->user();
+		$Basicdata = $this->fetchTable(Basicdata;
 
 		$query=$Basicdata->find('list',['keyField' => ['BAS_ID'],'valueField' => 'BAS_NAME'])->where(['BAS_TYPE_ID' =>5]);
 		$project = $query->toArray();
 		$this->set(compact('project'));
-		 
 
-		
 		$query=$Basicdata->find('list',['keyField' => ['BAS_ID'],'valueField' => 'BAS_NAME'])->where(['BAS_TYPE_ID' =>4]);
 		$department = $query->toArray();
 		$this->set(compact('department'));
-		
+
 		/*$query=$this->Payment->Ledgerstype->find('list',['keyField' => ['LDG_ID'],'valueField' => 'LDG_ID']);
-		
+
 		->where(['LTM_ID' =>4])
 		->orWhere(['LTM_ID' =>6])
 		->orWhere(['LTM_ID' =>7])
     	->orWhere(['LTM_ID' =>2]);
-	
+
 		$pur=$query->toArray();
 		*/
 		$query=$this->Recieve->Ledgers->find('list',['keyField' => ['LDG_ID'],'valueField' => 'LDG_NAME'])
@@ -308,23 +261,13 @@
 		//->where(['LDG_ID IN ' =>$pur]);
 		$paid_to = $query->toArray();
 		$this->set(compact('paid_to'));
-		
-		
-			
-			
-			
-			
-			
-			
-			
+
         $Recieve = $this->Recieve->get($id);
-		
+
 				$pay_date = date_format($Recieve->VCH_DATE,'d-m-Y');
 				$Recieve->VCH_DATE=$pay_date;
 				$this->set(compact('pay_date'));
-				
-				
-				
+
 				$ck_date = $Recieve->VCH_CHEQUE_DESC;
 				if (strlen($ck_date))
 				{
@@ -339,55 +282,50 @@
 					$ck_date='';
 				}
 				$Recieve->VCH_CHEQUE_DESC = $ck_date;
-				
+
 				//$check_date = $ck_date;
 				$this->set(compact('ck_date'));
-				
-				
+
         if ($this->request->is(['post','put'])) {
-				
+
 			$vdr_acc = ACC_CASH;
-			if ($this->request->data["payment_mode"]==2){
-				$vdr_acc =$this->request->data["VCH_DR_ACCOUNTS"];
+			if ($this->request->getData()["payment_mode"]==2){
+				$vdr_acc =$this->request->getData()["VCH_DR_ACCOUNTS"];
 			}
-			
-				
-			$vcr_acc =$this->request->data["VCH_CR_ACCOUNTS"];
-			
-			$amount=($this->request->data["VCH_AMOUNT"]);
-			
+
+			$vcr_acc =$this->request->getData()["VCH_CR_ACCOUNTS"];
+
+			$amount=($this->request->getData()["VCH_AMOUNT"]);
+
 			if ($vdr_acc==$vcr_acc )
 			{
 				        $this->set('Recieve', $Recieve);
-			            $this->Flash->error(__('You cannot select same account for Reciept'));				
+			            $this->Flash->error(__('You cannot select same account for Reciept'));
 						return;
 			}
-			
-			
+
 			if ($amount<=0)
 			{
 				        $this->set('Recieve', $Recieve);
-				            $this->Flash->error(__('Reciept Amount is not Correct'));				
+				            $this->Flash->error(__('Reciept Amount is not Correct'));
 							return;
 			}
 
-			
             $Recieve = $this->Recieve->patchEntity($Recieve, $this->request->data);
-			
+
 			//var_dump($Recieve);
 				//$vouchers->VCH_STATUS=0;
 			$Recieve->VCH_STATUS=STS_EDIT;
-			
+
 			$Recieve->VCH_TYPE=VCH_TYPE_RECIEPT;
 
 			$Recieve->VCH_STATUS_BY=$user['USR_ID'];
 			$Recieve->VCH_LAST_EDIT_BY=$user['USR_ID'];
 			$Recieve->VCH_SUBMIT_BY=$user['USR_ID'];
-			
+
 			$Recieve->VCH_DR_ACCOUNTS=$vdr_acc;
-		
-			
-			$pay_date=$this->request->data('pay_date');
+
+			$pay_date=$this->request->getData('pay_date');
 			if(strlen($pay_date)>8)
 			{
 			$vch_date = explode('-', $pay_date);
@@ -397,83 +335,72 @@
 				$month = $m;
 				$year = $y;
 				$pay_date = $y.'-'.$m.'-'.$d;
-				
-				$Recieve->VCH_DATE=$pay_date;	
+
+				$Recieve->VCH_DATE=$pay_date;
 					$Recieve->VCH_MONTH=$m;
 				$Recieve->VCH_YEAR=$y;
 			}
 			else
-			{	
+			{
 			 $this->set('Recieve', $Recieve);
-				            $this->Flash->error(__('Reciept Date is not specified'));				
+				            $this->Flash->error(__('Reciept Date is not specified'));
 							return;
 			}
-			
-			$ck_date = $this->request->data('check_date');
-			
+
+			$ck_date = $this->request->getData('check_date');
+
 			if (strlen($ck_date )>8)
 			{
-			
+
 			$exp_check_date = explode('-', $ck_date);
-			
+
 			$d = $exp_check_date[0];
 			$m = $exp_check_date[1];
 			$y = $exp_check_date[2];
-				
+
 			$ck_date = $y.'-'.$m.'-'.$d;
 			$Recieve->VCH_CHEQUE_DESC = $ck_date;
-			
-			
+
 			}
-				
-					
+
 //				$vch_Full=$year.$month.'0000'.$b;
-				
+
 	//			$Recieve->VCH_NO_FULL=$vch_Full;
-				
-			
-			$ldg_table= TableRegistry::get('Ledgers');
+
+			$ldg_table= $this->fetchTable(Ledgers;
 			$ldg = $ldg_table->get($vdr_acc);
-			
+
 			$paid_to= $ldg->LDG_CODE;
-			$paid_to_name= $ldg->LDG_NAME;			
-			
+			$paid_to_name= $ldg->LDG_NAME;
+
 			$ldg =$ldg_table->get($vcr_acc);
-			
+
 			$paid_from= $ldg->LDG_CODE;
 			$paid_from_name= $ldg->LDG_NAME;
-			
-			
+
 			$Recieve->ACC_DR_NAME=$paid_to_name;
 			$Recieve->ACC_CR_NAME=$paid_from_name;
-			
-				$full_des=$paid_from.'(Cr), '.$paid_to.'(Dr)';				
+
+				$full_des=$paid_from.'(Cr), '.$paid_to.'(Dr)';
 				$Recieve->VCH_FULL_DESCRIPTION=$full_des;
-				
 
-
-
-				
-				 if ($this->Recieve->save($Recieve,['validate' => false, 'associated' => false])) {				
+				 if ($this->Recieve->save($Recieve,['validate' => false, 'associated' => false])) {
 
 				$project=$Recieve->VCH_PROJECT;
 
 				$department=$Recieve->VCH_DEPARTMENT;
-				
+
 				/*echo "kdfjkf";
 				exit();*/
 				$this->Recieve->Voucherdtl->deleteAll(['VCH_ID' =>$id]);
-						
-									$VCH_NO = $Recieve->VCH_NO_FULL; 
+
+									$VCH_NO = $Recieve->VCH_NO_FULL;
 									$new_id= $Recieve->VCH_ID;  //data call from table
 
-									
-									
 									//insert data in another table
-					
-									
+
 									 $Voucherdtl = $this->Recieve->Voucherdtl->newEntity();
-									 
+
 										$Voucherdtl->VCH_ID=$new_id;
 										$Voucherdtl->VDT_DATE=$pay_date;
 										$Voucherdtl->VDT_VOUCHER_NO=$VCH_NO;
@@ -482,50 +409,34 @@
 										$Voucherdtl->VDT_LOT=1;
 										$Voucherdtl->VDT_SR=1;
 										$Voucherdtl->VDT_LDG_ID=$vcr_acc;
-										
+
 										$Voucherdtl->VDT_DEBIT=0;
 										$Voucherdtl->VDT_CREDIT=$amount;
 										$Voucherdtl->VDT_PROJECT=$project;
-		
+
 										$Voucherdtl->VDT_DEPARTMENT=$department;
 										$this->Recieve->Voucherdtl->save($Voucherdtl);
-										
-										
-										
-										
-										
+
 										$Voucherdt2 = $this->Recieve->Voucherdtl->newEntity();
-										
+
 										$Voucherdt2->VCH_ID=$new_id;
 										$Voucherdt2->VDT_DATE=$pay_date;
 										$Voucherdt2->VDT_VOUCHER_NO=$VCH_NO;
 										$Voucherdt2->VDT_LOT=1;
 										$Voucherdt2->VDT_SR=2;
 										$Voucherdt2->VDT_LDG_ID=$vdr_acc;
-										
+
 										$Voucherdt2->VDT_DEBIT=$amount;
 										$Voucherdt2->VDT_CREDIT=0;
 											$Voucherdt2->VDT_PROJECT=$project;
-		
+
 										$Voucherdt2->VDT_DEPARTMENT=$department;
 										$this->Recieve->Voucherdtl->save($Voucherdt2);
-									
-									
-									
-									
-										
-								
-	
-					return $this->redirect(['controller' => 'Recieve', 'action' => 'index']);						
-				
+
+					return $this->redirect(['controller' => 'Recieve', 'action' => 'index']);
+
 				}
-				
-				
-				
-				
-				
-				
-				
+
 				else
 				{
 					return $this->redirect(['controller' => 'Recieve', 'action' => 'edit']);
@@ -534,29 +445,16 @@
         }
         $this->set('Recieve', $Recieve);
     }
-		
-		
-		
-	
-	
-	
-	
-	
-	
-	
+
 	public function delete($VCH_ID = null)
 {
-	
-	
-		$user = $this->Auth->User();	
+
+		$user = $this->Auth->user();
     $Recieve = $this->Recieve->get($VCH_ID);
     if ($this->request->is(['post', 'put'])) {
-		
 
-		
-		
         $this->Recieve->patchEntity($Recieve, $this->request->data);
-		
+
 		$Recieve->VCH_STATUS=STS_DELETED;
 			$Recieve->VCH_STATUS_DATE=date('Y-m-d');
 			$Recieve->VCH_STATUS_BY=$user['USR_ID'];
@@ -570,11 +468,10 @@
     $this->set('Recieve', $Recieve);
 }
 
-		
-		
-		
-	
 	}
-	
-	
+
 ?>
+
+
+
+

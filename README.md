@@ -1,24 +1,67 @@
-# CakePHP Application Skeleton
+# Accounts
 
-[![Build Status](https://api.travis-ci.org/cakephp/app.png)](https://travis-ci.org/cakephp/app)
-[![License](https://poser.pugx.org/cakephp/app/license.svg)](https://packagist.org/packages/cakephp/app)
+Accounts is a CakePHP-based accounting application that provides core financial management features, including vouchers, payments, ledger handling, company branches, and business entity data.
 
-A skeleton for creating applications with [CakePHP](http://cakephp.org) 3.0.
+## Project summary
+
+- Built on CakePHP 4.5 with modern PHP conventions.
+- Implements accounting workflows for vouchers, payments, receipts, ledgers, and company hierarchy.
+- Includes models, controllers, and templates for a complete financial application.
+
+## Requirements
+
+- PHP 8.1 or higher
+- Composer
+- CakePHP 4.5
+- A compatible database (MySQL, PostgreSQL, SQLite, etc.)
 
 ## Installation
 
-1. Download [Composer](http://getcomposer.org/doc/00-intro.md) or update `composer self-update`.
-2. Run `php composer.phar create-project --prefer-dist cakephp/app [app_name]`.
-
-If Composer is installed globally, run
+1. Clone the repository:
 ```bash
-composer create-project --prefer-dist cakephp/app [app_name]
+git clone https://github.com/robiulhasanphp/Accounts.git
+cd Accounts
 ```
 
-You should now be able to visit the path to where you installed the app and see
-the setup traffic lights.
+2. Install dependencies:
+```bash
+composer install
+```
 
-## Configuration
+3. Configure the application:
+- Create or update `config/app.php` or `config/app_local.php`
+- Set the database connection under `Datasources.default`
+- Configure any required environment values
 
-Read and edit `config/app.php` and setup the 'Datasources' and any other
-configuration relevant for your application.
+4. Run database migrations or import the application schema as needed.
+
+## Running the application
+
+Use the built-in CakePHP server for local development:
+```bash
+bin/cake server
+```
+
+Then open `http://localhost:8765` in your browser.
+
+## Testing
+
+This repository includes a PHPUnit test suite under `tests/`.
+
+Run tests with:
+```bash
+vendor/bin/phpunit
+```
+
+## Project structure
+
+- `src/Controller/` — application controllers
+- `src/Model/` — Table classes, entities, and business logic
+- `src/Template/` — view templates for application pages
+- `tests/` — unit and integration tests
+
+## Notes
+
+- Review and update any fixtures or test configuration before running tests.
+- Ensure database credentials are set correctly for `config/app_local.php`.
+- This application is intended for accounting and financial record management.

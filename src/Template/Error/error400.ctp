@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 use Cake\Core\Configure;
 
 if (Configure::read('debug')):
-    $this->layout = 'dev_error';
+    $this->layout= 'dev_error';
 
     $this->assign('title', $message);
     $this->assign('templateName', 'error400.ctp');
@@ -13,7 +13,7 @@ if (Configure::read('debug')):
     <p class="notice">
         <strong>SQL Query: </strong>
         <?= h($error->queryString) ?>
-    </p>
+</</p>
 <?php endif; ?>
 <?php if (!empty($error->params)) : ?>
         <strong>SQL Query Params: </strong>
@@ -32,7 +32,6 @@ endif;
 <p class="error">
     <strong><?= __d('cake', 'Error') ?>: </strong>
     <?= sprintf(
-        __d('cake', 'The requested address %s was not found on this server.'),
-        "<strong>'{$url}'</strong>"
+        __d('cake', 'The requested address %s was not found on this server.'), "<strong>'{$url}'</strong>"
     ) ?>
 </p>

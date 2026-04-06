@@ -1,64 +1,57 @@
-<?php
-	namespace App\Controller;
-	
+﻿<?php
+declare(strict_types=1);
+namespace App\Controller;
+
 use App\Controller\AppController;
-use Cake\Event\Event;
-use Cake\Network\Exception\NotFoundException;
-use Cake\ORM\TableRegistry;	
-	
-	
+use Cake\Event\EventInterface;
+use Cake\Http\Exception\NotFoundException;
+use Cake\ORM\TableRegistry;
+
 	class  PurchaseController extends AppController{
-		
+
 /*		var $uses=array ('CompanyRoot', 'CompanyInfo', 'CompanyBranch');
 		public $helpers = array('Html', 'Form', 'Session');
 		public $components = array('Session');*/
-		
 
-		
-		
-		
 		public function index(){
-			
+
 			$sdate='';//date('Y-m-').'01';
 			$edate='';//date("Y-m-", strtotime("+1 month"));
 
 			if ($this->request->is(['post','put']))
 			{
-				$sdate=$this->request->data['sdate'];
-				$edate=$this->request->data['edate'];
-				
+				$sdate=$this->request->getData()['sdate'];
+				$edate=$this->request->getData()['edate'];
+
 				$sdate=DateToDB($sdate.'-','-');
 				$edate=DateToDB($edate.'-','-');
-				
+
 			}
 
 			if (($sdate=='') || ($edate==''))
 			{
 				$sdate=date('Y-m-').'01';
-				$edate=date('Y-m-',strtotime("+1 month")).'01';	
+				$edate=date('Y-m-',strtotime("+1 month")).'01';
 				$date = date_create($edate);
 				date_add($date, date_interval_create_from_date_string('-1 days'));
-				$edate=date_format($date, 'Y-m-d');				
+				$edate=date_format($date, 'Y-m-d');
 			}
-		
+
 				$Purchase = $this->Purchase->find('all')
 				->where(['VCH_TYPE' =>VCH_TYPE_PURCHASE])
 				->andWhere(['VCH_DATE >=' =>$sdate])
 				->andWhere(['VCH_DATE <=' =>$edate])
 				->andWhere(['VCH_STATUS !=' =>STS_DELETED])
-				->order(['VCH_DATE' =>'DESC','VCH_ID' =>'DESC']);      
+				->order(['VCH_DATE' =>'DESC','VCH_ID' =>'DESC']);
 				$this->set(compact('Purchase'));
 				$this->set(compact('sdate'));
-				$this->set(compact('edate'));	
-		
-	
+				$this->set(compact('edate'));
+
 		}
-		
-		
-		
+
 public function view($VCH_ID)
     {
-        if (!$VCH_ID) 
+        if (!$VCH_ID)
 		{
             throw new NotFoundException(__('Invalid user'));
         }
@@ -66,144 +59,117 @@ public function view($VCH_ID)
         $Purchase = $this->Purchase->get($VCH_ID);
         $this->set(compact('Purchase'));
     }
-		
-		
-		
-		
-		
+
   	public function add()
     {
-	
-			$user = $this->Auth->User();
-			
-			$Basicdata = TableRegistry::get('Basicdata');
-			
+
+			$user = $this->Auth->user();
+
+			$Basicdata = $this->fetchTable(Basicdata;
+
 			$query=$Basicdata->find('list',['keyField' => ['BAS_ID'],'valueField' => 'BAS_NAME'])
 			->where(['BAS_TYPE_ID' =>PROJECT_TYPE]);
-			
+
 			$project = $query->toArray();
-			
+
 			$this->set(compact('project'));
-			
-			
-			
+
 			$query=$Basicdata->find('list',['keyField' => ['BAS_ID'],'valueField' => 'BAS_NAME'])
 			->where(['BAS_TYPE_ID' =>DEPARTMENT_TYPE]);
-			
+
 			$department = $query->toArray();
-			
+
 			$this->set(compact('department'));
-			
-			
-			
-			$Ledgerstype = TableRegistry::get('Ledgerstype');
-			
-			
+
+			$Ledgerstype = $this->fetchTable(Ledgerstype;
+
 			/*		$query=$Ledgerstype->find('list',['keyField' =>['LDG_ID'],'valueField' => 'LDG_ID']);
-			
+
 			->where(['LTM_ID' =>4])
 			->orWhere(['LTM_ID' =>6])
 			->orWhere(['LTM_ID' =>7])
 			->orWhere(['LTM_ID' =>2]);
-			
+
 			$pur=$query->toArray();
 			$this->set(compact('pur'));*/
-			
-			
+
 			$query=$this->Purchase->Ledgers->find('list',['keyField' => ['LDG_ID'],'valueField' => 'LDG_NAME'])			->order(['LDG_NAME'=>'ASC']);
 			//		->where(['LDG_ID IN ' =>$pur]);
 			$purchase_f = $query->toArray();
 			$this->set(compact('purchase_f'));
-			
-			
-			
-			
-			
-			
+
 			$query=$this->Purchase->Ledgers->find('list',['keyField' => 'LDG_ID','valueField' => 'LDG_NAME'])
 	->where(['LDG_TYPES like ' =>'%INV%'])
 			->order(['LDG_NAME'=>'ASC']);
-			
+
 			$item = $query->toArray();
-			
+
 			$this->set(compact('item'));
-			
-			
-		
-	
-	
+
         $Purchase = $this->Purchase->newEntity();
         if ($this->request->is('post')) {
-			
-			
-		
-			$amount=($this->request->data["VCH_AMOUNT"]);
-			$purchase_from=($this->request->data["VCH_CR_ACCOUNTS"]);
-			$items=($this->request->data["VCH_DR_ACCOUNTS"]);
-			
-			
+
+			$amount=($this->request->getData()["VCH_AMOUNT"]);
+			$purchase_from=($this->request->getData()["VCH_CR_ACCOUNTS"]);
+			$items=($this->request->getData()["VCH_DR_ACCOUNTS"]);
+
 			$ldg = $this->Purchase->Ledgers->get($purchase_from);
-			
+
 			$purchase_from_code= $ldg->LDG_CODE;
 			$purchase_from_name= $ldg->LDG_NAME;
-			
+
 			$ldg = $this->Purchase->Ledgers->get($items);
-			
+
 			$item_code= $ldg->LDG_CODE;
 			$item_name= $ldg->LDG_NAME;
-			
+
             $Purchase = $this->Purchase->patchEntity($Purchase, $this->request->data);
-			
-			
-			
+
 			$full_des=$purchase_from_code.'(Cr), '.$item_code.'(Dr)';
 
 			$Purchase->VCH_FULL_DESCRIPTION=$full_des;
 
 			$Purchase->ACC_DR_NAME=$item_name;
 			$Purchase->ACC_CR_NAME=$purchase_from_name;
-			
+
 			$Purchase->VCH_STATUS=STS_CREATE;
 			$Purchase->VCH_CREATE_BY=$user['USR_ID'];
-			
+
 			$Purchase->VCH_TYPE=VCH_TYPE_PURCHASE;
 
 			$Purchase->VCH_STATUS_BY=$user['USR_ID'];
 			$Purchase->VCH_LAST_EDIT_BY=$user['USR_ID'];
 			$Purchase->VCH_SUBMIT_BY=$user['USR_ID'];
-				
-			
-			
-			$invoice=$this->request->data('INVDATE');
+
+			$invoice=$this->request->getData('INVDATE');
 
 			if ($invoice<>"")
 			{
-				
-				$invoice_date = $invoice;//$this->request->data('INVDATE');
+
+				$invoice_date = $invoice;//$this->request->getData('INVDATE');
 				$Purchase->VCH_INV_DATE = DateToDB($invoice_date.'-','-');
 			}
-			
-			$chalan=$this->request->data('CHALLANDATE');
-			
+
+			$chalan=$this->request->getData('CHALLANDATE');
+
 			if ($chalan<>"")
 			{
-				$chalan_date = $chalan;//$this->request->data('INVDATE');
-				$Purchase->VCH_CHALLAN_DATE = DateToDB($chalan_date.'-','-');			
+				$chalan_date = $chalan;//$this->request->getData('INVDATE');
+				$Purchase->VCH_CHALLAN_DATE = DateToDB($chalan_date.'-','-');
 
 			}
-			
-			$date=$this->request->data('pay_date');
+
+			$date=$this->request->getData('pay_date');
 			$pay_date='';
 			if ($date<>"")
 			{
-			
-			
+
 				$date_sep = explode('-', $date);
 				$d = $date_sep[0];
 				$m = $date_sep[1];
 				$y = $date_sep[2];
 				$pay_date = $y.'-'.$m.'-'.$d;
-				
+
 				$Purchase->VCH_DATE=$pay_date;
 				$Purchase->VCH_MONTH=$m;
 				$Purchase->VCH_YEAR=$y;
@@ -218,33 +184,25 @@ public function view($VCH_ID)
 			$project=$Purchase->VCH_PROJECT;
 
 			$department=$Purchase->VCH_DEPARTMENT;
-			
-		
-				
-			
-			$Purchase->VDT_VOUCHER_NO='';
-			
 
-			
-			
+			$Purchase->VDT_VOUCHER_NO='';
+
             if ($this->Purchase->save($Purchase,['validate' => false, 'associated' => false])) {
-				
-				
+
 				$id = $Purchase->VCH_ID;  //data call from table
 				$new_id=$id;
-				
+
 				$year=$Purchase->VCH_YEAR;
 				$month=$Purchase->VCH_MONTH;
-				
+
 				$Purchase=$this->Purchase->get($id);
-				
+
 				$vch_Full=$Purchase->VCH_NO_FULL;
 
 				//insert data in another table
 
-				
 			    $Voucherdtl = $this->Purchase->Voucherdtl->newEntity();
-				 
+
 				$Voucherdtl->VCH_ID=$new_id;
 				$Voucherdtl->VDT_DATE=$pay_date;
 				$Voucherdtl->VDT_VOUCHER_NO=$vch_Full;
@@ -258,201 +216,156 @@ public function view($VCH_ID)
 			//	echo $department;
 				$Voucherdtl->VDT_DEPARTMENT=$department;
 
-						
 			$this->Purchase->Voucherdtl->save($Voucherdtl);
-				   
-		
-		
-		
-		
+
 				 $Voucherdt2 = $this->Purchase->Voucherdtl->newEntity();
-				 
+
 				  $Voucherdt2->VCH_ID=$new_id;
 				   $Voucherdt2->VDT_DATE=$pay_date;
 				    $Voucherdt2->VDT_VOUCHER_NO=$vch_Full;
 					 $Voucherdt2->VDT_LOT=1;
 					  $Voucherdt2->VDT_SR=2;
 					  	$Voucherdt2->VDT_LDG_ID=$items;
-						
+
 					  	$Voucherdt2->VDT_DEBIT=$amount;
 				   		$Voucherdt2->VDT_CREDIT=0;
 						$Voucherdt2->VDT_PROJECT=$project;
 						$Voucherdt2->VDT_DEPARTMENT=$department;
-						
+
 				    $this->Purchase->Voucherdtl->save($Voucherdt2);
-				   
-				
-				
-              
-		 if ($this->request->data["CONTINUE"]!=0)
+
+		 if ($this->request->getData()["CONTINUE"]!=0)
 			  {
 				    $this->Flash->success(__('Voucher : '.$vch_Full.' [ Amount = '.$amount.']  has been saved.'));
 				  return $this->redirect(array('action' => 'add'));
-				  
+
 			  }
 			  else
 			  {
 				  return $this->redirect(array('action' => 'index'));
 			  }
 
-			 
             }
             $this->Flash->error(__('Unable to add the vouchers.'));
         }
         $this->set('Purchase', $Purchase);
     }
 
-
-		
-		
-		
-		
-
 public function edit($VCH_ID = null)
 {
 
-	
-			$user = $this->Auth->User();
-			
-			$Basicdata = TableRegistry::get('Basicdata');
-			
+			$user = $this->Auth->user();
+
+			$Basicdata = $this->fetchTable(Basicdata;
+
 			$query=$Basicdata->find('list',['keyField' => ['BAS_ID'],'valueField' => 'BAS_NAME'])
 			->where(['BAS_TYPE_ID' =>PROJECT_TYPE]);
-			
+
 			$project = $query->toArray();
-			
+
 			$this->set(compact('project'));
-			
-			
-			
+
 			$query=$Basicdata->find('list',['keyField' => ['BAS_ID'],'valueField' => 'BAS_NAME'])
 			->where(['BAS_TYPE_ID' =>DEPARTMENT_TYPE]);
-			
+
 			$department = $query->toArray();
-			
+
 			$this->set(compact('department'));
-			
-			
-			
-			$Ledgerstype = TableRegistry::get('Ledgerstype');
-			
-			
+
+			$Ledgerstype = $this->fetchTable(Ledgerstype;
+
 			/*		$query=$Ledgerstype->find('list',['keyField' =>['LDG_ID'],'valueField' => 'LDG_ID']);
-			
+
 			->where(['LTM_ID' =>4])
 			->orWhere(['LTM_ID' =>6])
 			->orWhere(['LTM_ID' =>7])
 			->orWhere(['LTM_ID' =>2]);
-			
+
 			$pur=$query->toArray();
 			$this->set(compact('pur'));*/
-			
-			
+
 			$query=$this->Purchase->Ledgers->find('list',['keyField' => ['LDG_ID'],'valueField' => 'LDG_NAME']);
 			//		->where(['LDG_ID IN ' =>$pur]);
 			$purchase_f = $query->toArray();
 			$this->set(compact('purchase_f'));
-			
-			
-			
-			
-			
-			
-			
+
 			$query=$this->Purchase->Ledgers->find('list',['keyField' => 'LDG_ID','valueField' => 'LDG_NAME'])
 			->where(['LDG_TYPES like ' =>'%INV%'])
 			->order(['LDG_NAME'=>'ASC']);
-			
+
 			$item = $query->toArray();
-			
+
 			$this->set(compact('item'));
-			
-			
-			
+
 			$Purchase = $this->Purchase->get($VCH_ID);
 			//				echo $Purchase->VCH_DATE;
 			$Purchase->pdate=date('d-m-Y',strtotime($Purchase->VCH_DATE));
-			
+
 			$Purchase->INVDATE=validateDate($Purchase->VCH_INV_DATE);
-			
+
 			$Purchase->CHALLANDATE=validateDate($Purchase->VCH_CHALLAN_DATE);
 
-
-			
-				
 				$Purchase->pay_date=validateDate($Purchase->VCH_DATE);;
 
-
         if ($this->request->is(['post','put'])) {
-			
-			
-		
-			$amount=($this->request->data["VCH_AMOUNT"]);
-			$purchase_from=($this->request->data["VCH_CR_ACCOUNTS"]);
-			$items=($this->request->data["VCH_DR_ACCOUNTS"]);
-			
-			
+
+			$amount=($this->request->getData()["VCH_AMOUNT"]);
+			$purchase_from=($this->request->getData()["VCH_CR_ACCOUNTS"]);
+			$items=($this->request->getData()["VCH_DR_ACCOUNTS"]);
+
 			$ldg = $this->Purchase->Ledgers->get($purchase_from);
-			
+
 			$purchase_from_code= $ldg->LDG_CODE;
-			$purchase_from_name= $ldg->LDG_NAME;			
-			
+			$purchase_from_name= $ldg->LDG_NAME;
+
 			$ldg = $this->Purchase->Ledgers->get($items);
-			
+
 			$item_code= $ldg->LDG_CODE;
 			$item_name= $ldg->LDG_NAME;
-			
+
             $Purchase = $this->Purchase->patchEntity($Purchase, $this->request->data);
-			
-			
-			
+
 			$full_des=$purchase_from_code.'(Cr), '.$item_code.'(Dr)';
 
 			$Purchase->VCH_FULL_DESCRIPTION=$full_des;
-			
+
 			$Purchase->ACC_DR_NAME=$item_name;
 			$Purchase->ACC_CR_NAME=$purchase_from_name;
 
 			$Purchase->VCH_STATUS=STS_EDIT;
-			
-			
-		
+
 			$Purchase->VCH_STATUS_BY=$user['USR_ID'];
 			$Purchase->VCH_LAST_EDIT_BY=$user['USR_ID'];
-	
-				
-			
-			
-			$invoice=$this->request->data('INVDATE');
+
+			$invoice=$this->request->getData('INVDATE');
 
 			if ($invoice<>"")
 			{
-				
-				$invoice_date = $invoice;//$this->request->data('INVDATE');
+
+				$invoice_date = $invoice;//$this->request->getData('INVDATE');
 				$Purchase->VCH_INV_DATE = DateToDB($invoice_date.'-','-');
 			}
-			
-			$chalan=$this->request->data('CHALLANDATE');
-			
+
+			$chalan=$this->request->getData('CHALLANDATE');
+
 			if ($chalan<>"")
 			{
-				$chalan_date = $chalan;//$this->request->data('INVDATE');
-				$Purchase->VCH_CHALLAN_DATE = DateToDB($chalan_date.'-','-');			
+				$chalan_date = $chalan;//$this->request->getData('INVDATE');
+				$Purchase->VCH_CHALLAN_DATE = DateToDB($chalan_date.'-','-');
 
 			}
-			
-			$date=$this->request->data('pay_date');
+
+			$date=$this->request->getData('pay_date');
 			$pay_date='';
 			if ($date<>"")
 			{
-			
-			
+
 				$date_sep = explode('-', $date);
 				$d = $date_sep[0];
 				$m = $date_sep[1];
 				$y = $date_sep[2];
 				$pay_date = $y.'-'.$m.'-'.$d;
-				
+
 				$Purchase->VCH_DATE=$pay_date;
 				$Purchase->VCH_MONTH=$m;
 				$Purchase->VCH_YEAR=$y;
@@ -467,27 +380,18 @@ public function edit($VCH_ID = null)
 			$project=$Purchase->VCH_PROJECT;
 
 			$department=$Purchase->VCH_DEPARTMENT;
-			
-		
-				
-			
-			
-			
 
-			
-			
             if ($this->Purchase->save($Purchase,['validate' => false, 'associated' => false])) {
-				
+
 					$this->Purchase->Voucherdtl->deleteAll(['VCH_ID' =>$VCH_ID]);
-						
-									$VCH_NO = $Purchase->VCH_NO_FULL; 
+
+									$VCH_NO = $Purchase->VCH_NO_FULL;
 									$new_id= $Purchase->VCH_ID;  //data call from table
 
 				//insert data in another table
 
-				
 				 $Voucherdtl = $this->Purchase->Voucherdtl->newEntity();
-				 
+
 				$Voucherdtl->VCH_ID=$new_id;
 				$Voucherdtl->VDT_DATE=$pay_date;
 				$Voucherdtl->VDT_VOUCHER_NO=$VCH_NO;
@@ -501,54 +405,41 @@ public function edit($VCH_ID = null)
 			//	echo $department;
 				$Voucherdtl->VDT_DEPARTMENT=$department;
 
-						
 			$this->Purchase->Voucherdtl->save($Voucherdtl);
-				   
-		
-		
-		
-		
+
 				 $Voucherdt2 = $this->Purchase->Voucherdtl->newEntity();
-				 
+
 				  $Voucherdt2->VCH_ID=$new_id;
 				   $Voucherdt2->VDT_DATE=$pay_date;
 				    $Voucherdt2->VDT_VOUCHER_NO=$VCH_NO;
 					 $Voucherdt2->VDT_LOT=1;
 					  $Voucherdt2->VDT_SR=2;
 					  	$Voucherdt2->VDT_LDG_ID=$items;
-						
+
 					  	$Voucherdt2->VDT_DEBIT=$amount;
 				   		$Voucherdt2->VDT_CREDIT=0;
 						$Voucherdt2->VDT_PROJECT=$project;
 						$Voucherdt2->VDT_DEPARTMENT=$department;
-						
+
 				    $this->Purchase->Voucherdtl->save($Voucherdt2);
-				   
-				
-					
+
 		 return $this->redirect(array('action' => 'index'));
-			 
+
             }
             $this->Flash->error(__('Unable to add the vouchers.'));
         }
         $this->set('Purchase', $Purchase);
     }
 
-	
-		
 public function delete($VCH_ID = null)
 {
-	
-	
-		$user = $this->Auth->User();	
+
+		$user = $this->Auth->user();
     $Purchase = $this->Purchase->get($VCH_ID);
     if ($this->request->is(['post', 'put'])) {
-		
 
-		
-		
         $this->Purchase->patchEntity($Purchase, $this->request->data);
-		
+
 		$Purchase->VCH_STATUS=STS_DELETED;
 			$Purchase->VCH_STATUS_DATE=date('Y-m-d');
 			$Purchase->VCH_STATUS_BY=$user['USR_ID'];
@@ -562,14 +453,10 @@ public function delete($VCH_ID = null)
     $this->set('Purchase', $Purchase);
 }
 
-	
-	
-	
-	
 	public function isAuthorized($user)
 {
     // All registered users can add articles
-    if ($this->request->action === 'add') 
+    if ($this->request->action === 'add')
 	{
         return true;
     }
@@ -578,7 +465,7 @@ public function delete($VCH_ID = null)
   /*  if (in_array($this->request->action, ['edit', 'delete']))
 	 {
         $articleId = (int)$this->request->params['pass'][0];
-        if ($this->Articles->isOwnedBy($articleId, $user['id'])) 
+        if ($this->Articles->isOwnedBy($articleId, $user['id']))
 		{
             return true;
         }
@@ -586,12 +473,11 @@ public function delete($VCH_ID = null)
 
     return parent::isAuthorized($user);
 }
-	
-	
-		
-		
-		
-		
+
 	}
 
 ?>
+
+
+
+

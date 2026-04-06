@@ -1,9 +1,7 @@
-<!-- src/Template/Users/add.ctp -->
+﻿<!-- src/Template/Users/add.ctp -->
 <div class="content_inner">
 
 <div class="inner_box small">
-
-
 
 <h4 class="inner_title"> Edit  Branch Office</h4>
 <div style="clear:both"></div>
@@ -11,11 +9,9 @@
 <hr />
 	<?php
     	echo $this->Form->create($CompanyBranch);
-		
+
 			echo $this->Form->input('CMP_ID', array(
-					'label'=>'Company ID',
-					'type'=>'select',
-					'options'=>$CompanyInfo
+					'label'=>'Company ID', 'type'=>'select', 'options'=>$CompanyInfo
 				)
 			);
         echo $this->Form->input('BRN_NAME', array(
@@ -51,9 +47,7 @@
             )
         );
 		echo $this->Form->input('BRN_ACTIVE', array(
-                'label'=>'Active',
-				'type'=>'checkbox',
-				'label'=>'Active'
+                'label'=>'Active', 'type'=>'checkbox', 'label'=>'Active'
             )
         );
 		echo $this->Form->input('BRN_ACTIVE_CODE', array(
@@ -64,12 +58,9 @@
                 'type'=>'hidden'
             )
         );
-		
+
 		echo "<div style='clear:both'></div>";
 		echo $this->Form->button('Update', array('class'=>'custom_submit'));
 		echo $this->Form->end();
 	?>
 </div>
-
-
-

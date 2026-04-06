@@ -1,6 +1,5 @@
-<?php
+﻿<?php
 declare(strict_types=1);
-
 namespace App\Controller;
 
 use App\Controller\AppController;
@@ -8,86 +7,114 @@ use Cake\Http\Exception\NotFoundException;
 
 class BasicdataController extends AppController
 {
+    /**
+     * List all basic data records
+     */
     public function index(): void
     {
-        $basicdata = $this->Basicdata->find()->all();
+        $basicdataTable = $this->fetchTable('Basicdata');
+        $basicdata = $basicdataTable->find()->all();
         $this->set(compact('basicdata'));
     }
 
+    /**
+     * Display single basic data record
+     */
     public function view(int $id): void
     {
-        $basicdata = $this->Basicdata->get($id);
-
-        if (!$basicdata) {
-            throw new NotFoundException('Record not found');
+        if (!$id) {
+            throw new NotFoundException(__('Invalid record'));
         }
 
+        $basicdataTable = $this->fetchTable('Basicdata');
+        $basicdata = $basicdataTable->get($id);
         $this->set(compact('basicdata'));
     }
 
+    /**
+     * Create new basic data record
+     */
     public function add()
     {
-        $basicdata = $this->Basicdata->newEmptyEntity();
+        $basicdataTable = $this->fetchTable('Basicdata');
+        $basicdata = $basicdataTable->newEmptyEntity();
 
         if ($this->request->is('post')) {
-
-            $basicdata = $this->Basicdata->patchEntity(
+            $basicdata = $basicdataTable->patchEntity(
                 $basicdata,
                 $this->request->getData()
             );
 
             $basicdata->bas_type_id = 3;
 
-            if ($this->Basicdata->save($basicdata)) {
-                $this->Flash->success('Saved successfully');
+            if ($basicdataTable->save($basicdata)) {
+                $this->Flash->success(__('Record created successfully'));
                 return $this->redirect(['action' => 'index']);
             }
 
-            $this->Flash->error('Save failed');
+            $this->Flash->error(__('Failed to create record'));
         }
 
         $this->set(compact('basicdata'));
     }
 
+    /**
+     * Edit basic data record
+     */
     public function edit(int $id)
     {
-        $basicdata = $this->Basicdata->get($id);
+        if (!$id) {
+            throw new NotFoundException(__('Invalid record'));
+        }
+
+        $basicdataTable = $this->fetchTable('Basicdata');
+        $basicdata = $basicdataTable->get($id);
 
         if ($this->request->is(['patch', 'post', 'put'])) {
-
-            $basicdata = $this->Basicdata->patchEntity(
+            $basicdata = $basicdataTable->patchEntity(
                 $basicdata,
                 $this->request->getData()
             );
 
             $basicdata->bas_type_id = 3;
 
-            if ($this->Basicdata->save($basicdata)) {
-                $this->Flash->success('Updated successfully');
+            if ($basicdataTable->save($basicdata)) {
+                $this->Flash->success(__('Record updated successfully'));
                 return $this->redirect(['action' => 'index']);
             }
 
-            $this->Flash->error('Update failed');
+            $this->Flash->error(__('Failed to update record'));
         }
 
         $this->set(compact('basicdata'));
     }
 
+    /**
+     * Delete basic data record
+     */
     public function delete(int $id)
     {
         $this->request->allowMethod(['post', 'delete']);
 
-        $basicdata = $this->Basicdata->get($id);
+        if (!$id) {
+            throw new NotFoundException(__('Invalid record'));
+        }
 
-        if ($this->Basicdata->delete($basicdata)) {
-            $this->Flash->success('Deleted successfully');
+        $basicdataTable = $this->fetchTable('Basicdata');
+        $basicdata = $basicdataTable->get($id);
+
+        if ($basicdataTable->delete($basicdata)) {
+            $this->Flash->success(__('Record deleted successfully'));
         } else {
-            $this->Flash->error('Delete failed');
+            $this->Flash->error(__('Failed to delete record'));
         }
 
         return $this->redirect(['action' => 'index']);
     }
 
+    /**
+     * Check user authorization
+     */
     public function isAuthorized($user): bool
     {
         if ($this->request->getParam('action') === 'add') {
@@ -96,4 +123,7 @@ class BasicdataController extends AppController
 
         return parent::isAuthorized($user);
     }
-}
+
+
+
+

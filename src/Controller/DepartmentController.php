@@ -1,123 +1,125 @@
-<?php
-	namespace App\Controller;
-	
+﻿<?php
+declare(strict_types=1);
+namespace App\Controller;
+
 use App\Controller\AppController;
-use Cake\Event\Event;
-use Cake\Network\Exception\NotFoundException;
-	
-	
-	
-	class  DepartmentController extends AppController{
-		
-/*		var $uses=array ('CompanyRoot', 'CompanyInfo', 'CompanyBranch');
-		public $helpers = array('Html', 'Form', 'Session');
-		public $components = array('Session');*/
-		
+use Cake\Http\Exception\NotFoundException;
 
-		
-		
-		
-		public function index(){
-			
-	$Department = $this->Department->find('all')
-	            ->where(['BAS_TYPE_ID' =>DEPARTMENT_TYPE]);
-        $this->set(compact('Department'));
-	
-   
-	
-		}
-		
-		
-	  public function view($BAS_ID)
+class DepartmentController extends AppController
+{
+    /**
+     * List all departments
+     */
+    public function index(): void
     {
-        if (!$BAS_ID) 
-		{
-            throw new NotFoundException(__('Invalid user'));
+        $departmentTable = $this->fetchTable('Department');
+        $department = $departmentTable->find()
+            ->where(['BAS_TYPE_ID' => DEPARTMENT_TYPE])
+            ->all();
+
+        $this->set(compact('department'));
+    }
+
+    /**
+     * Display single department
+     */
+    public function view(int $id)
+    {
+        if (!$id) {
+            throw new NotFoundException(__('Invalid department'));
         }
 
-        $Department = $this->Department->get($BAS_ID);
-        $this->set(compact('Department'));
+        $departmentTable = $this->fetchTable('Department');
+        $department = $departmentTable->get($id);
+        $this->set(compact('department'));
     }
-		
-		
-	  public function add()
+
+    /**
+     * Create new department
+     */
+    public function add()
     {
-        $Department = $this->Department->newEntity();
+        $departmentTable = $this->fetchTable('Department');
+        $department = $departmentTable->newEmptyEntity();
+
         if ($this->request->is('post')) {
-            $Department = $this->Department->patchEntity($Department, $this->request->data);
-			$Department->BAS_TYPE_ID=4;
-            if ($this->Department->save($Department)) {
-                $this->Flash->success(__('The user has been saved.'));
-               return $this->redirect(array('action' => 'index'));
+            $department = $departmentTable->patchEntity($department, $this->request->getData());
+            $department->BAS_TYPE_ID = DEPARTMENT_TYPE;
+
+            if ($departmentTable->save($department)) {
+                $this->Flash->success(__('Department created successfully'));
+                return $this->redirect(['action' => 'index']);
             }
-            $this->Flash->error(__('Unable to add the user.'));
+
+            $this->Flash->error(__('Failed to create department'));
         }
-        $this->set('Department', $Department);
+
+        $this->set(compact('department'));
     }
 
-
-		
-		
-public function edit($BAS_ID = null)
-{
-    $Department = $this->Department->get($BAS_ID);
-    if ($this->request->is(['post', 'put'])) {
-        $this->Department->patchEntity($Department, $this->request->data);
-		$Department->BAS_TYPE_ID=4;
-        if ($this->Department->save($Department)) {
-            $this->Flash->success(__('Your article has been updated.'));
-            return $this->redirect(['action' => 'index']);
+    /**
+     * Edit department
+     */
+    public function edit(int $id)
+    {
+        if (!$id) {
+            throw new NotFoundException(__('Invalid department'));
         }
-        $this->Flash->error(__('Unable to update your article.'));
+
+        $departmentTable = $this->fetchTable('Department');
+        $department = $departmentTable->get($id);
+
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $department = $departmentTable->patchEntity($department, $this->request->getData());
+            $department->BAS_TYPE_ID = DEPARTMENT_TYPE;
+
+            if ($departmentTable->save($department)) {
+                $this->Flash->success(__('Department updated successfully'));
+                return $this->redirect(['action' => 'index']);
+            }
+
+            $this->Flash->error(__('Failed to update department'));
+        }
+
+        $this->set(compact('department'));
     }
 
-    $this->set('Department', $Department);
-}
+    /**
+     * Delete department
+     */
+    public function delete(int $id)
+    {
+        $this->request->allowMethod(['post', 'delete']);
 
-	
-	
-		public function delete($BAS_ID = null)
-{
-    $Department = $this->Department->get($BAS_ID);
-        $this->request->is(['post', 'delete']);
-        if ($this->Department->delete($Department)) {
-            $this->Flash->success('The user has been deleted.');
+        if (!$id) {
+            throw new NotFoundException(__('Invalid department'));
+        }
+
+        $departmentTable = $this->fetchTable('Department');
+        $department = $departmentTable->get($id);
+
+        if ($departmentTable->delete($department)) {
+            $this->Flash->success(__('Department deleted successfully'));
         } else {
-            $this->Flash->error('The user could not be deleted. Please, try again.');
+            $this->Flash->error(__('Failed to delete department'));
         }
+
         return $this->redirect(['action' => 'index']);
     }
-	
-	
-	
-	
-	
-	public function isAuthorized($user)
-{
-    // All registered users can add articles
-    if ($this->request->action === 'add') 
-	{
-        return true;
-    }
 
-    // The owner of an article can edit and delete it
-  /*  if (in_array($this->request->action, ['edit', 'delete']))
-	 {
-        $articleId = (int)$this->request->params['pass'][0];
-        if ($this->Articles->isOwnedBy($articleId, $user['id'])) 
-		{
+    /**
+     * Check user authorization
+     */
+    public function isAuthorized($user): bool
+    {
+        if ($this->request->getParam('action') === 'add') {
             return true;
         }
-    }*/
 
-    return parent::isAuthorized($user);
+        return parent::isAuthorized($user);
+    }
 }
-	
-	
-		
-		
-		
-		
-	}
 
-?>
+
+
+

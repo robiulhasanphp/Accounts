@@ -1,39 +1,31 @@
-<!-- src/Template/Users/add.ctp -->
+﻿<!-- src/Template/Users/add.ctp -->
 <div class="content_inner">
 
 <div class="inner_box small">
 
-
-
 <h4 class="inner_title"> Edit User Group </h4>
 <div style="clear:both"></div>
-
 
 <div class="add_box">
 <hr />
 <fieldset>
 <?php
     echo $this->Form->create($Usergroup);
-    echo $this->Form->input('BAS_ID', array('type' => 'hidden'));
+    echo $this->Form->input('BAS_ID', array('type'=> 'hidden'));
     echo $this->Form->input('BAS_CODE', array(
-            'label'=>'User code',
-			'type'=>'text'
+            'label'=>'User code', 'type'=>'text'
         ));
 	echo $this->Form->input('BAS_NAME', array(
-            'label'=>'User Name',
-			'type'=>'text'
+            'label'=>'User Name', 'type'=>'text'
         ));
 	echo $this->Form->input('BAS_DESCRIPTION', array(
-            'label'=>'Description',
-			'type'=>'text'
+            'label'=>'Description', 'type'=>'text'
         ));
-		
-		
-?>
 
-</fieldset>
+?>
+</</fieldset>
 <?php
- 
+
   	echo '<div class="button">';
       echo $this->Form->button('Update', array('class'=>'custom_submit'));
   	echo '</div>';?>

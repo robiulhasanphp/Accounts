@@ -1,54 +1,47 @@
-<!-- src/Template/Users/add.ctp -->
+﻿<!-- src/Template/Users/add.ctp -->
 <div class="content_inner">
 
 <div class="inner_box small">
-
-
 
 <h4 class="inner_title"> Creat New Company </h4>
 <div style="clear:both"></div>
                             <div class="add_box">
                             <hr />
 	<?php
-	//echo $this->CompanyRoot->RT_ID;	
-	
+	//echo $this->CompanyRoot->RT_ID;
+
     	echo $this->Form->create($CompanyInfo);
-		
+
 			echo $this->Form->input('CMP_ROOT_ID', array(
-				'options' => $CompanyRoot,
-				'label' => 'Group Name',
-				'type' => 'select',
-				'selected'=>'selected'
+				'options'=> $CompanyRoot, 'label'=> 'Group Name', 'type'=> 'select', 'selected'=>'selected'
 			));
 			echo $this->Form->input('CMP_CODE', array(
-				'label' => 'Company Code'
+				'label'=> 'Company Code'
 			));
 			echo $this->Form->input('CMP_NAME', array(
-				'label' => 'Company Name'
+				'label'=> 'Company Name'
 			));
 			echo $this->Form->input('CMP_ADDRESS', array(
-				'label' => 'Address'
+				'label'=> 'Address'
 			));
 			echo $this->Form->input('CMP_PHONE', array(
-				'label' => 'Phone'
+				'label'=> 'Phone'
 			));
 			echo $this->Form->input('CMP_FAX', array(
-				'label' => 'Fax'
+				'label'=> 'Fax'
 			));
 			echo $this->Form->input('CMP_EMAIL', array(
-				'label' => 'Email'
+				'label'=> 'Email'
 			));
-			
+
 			//echo "<div class'check'>";
 		/*		echo $this->Form->input('CMP_ACTIVE', array(
-					'label' => 'Company Active',
-					'type' => 'checkbox',
-					'class' => 'check'
+					'label'=> 'Company Active', 'type'=> 'checkbox', 'class'=> 'check'
 				));
 			//echo "</div>";
-			
+
 		echo $this->Form->input('CMP_LOGO', array(
-			  'label' => 'Company Logo'
+			  'label'=> 'Company Logo'
 			));*/
 echo "    <div style='clear:both'></div>		";
 
@@ -58,5 +51,3 @@ echo "    <div style='clear:both'></div>		";
     <div style='clear:both'></div>
 </div>
 </div></div>
-
-
