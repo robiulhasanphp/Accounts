@@ -1,75 +1,106 @@
-<?php	
-	namespace App\Controller;
-	use App\Controller\AppController;
-	//$uses = array('CompanyInfo', 'CompanyBranch');
-	
-	class CompanyInfoController extends AppController{
-		
-		
-		public function index(){
-			$this->set('CompanyInfo', $this->CompanyInfo->find('all')->contain('CompanyBranch'));
-		}
+<?php
+declare(strict_types=1);
 
+namespace App\Controller;
 
-		
-		public function view($CMP_ID){
-			$this->set('CompanyInfo', $this->CompanyInfo->find('all')->where(['CMP_ID'=>$CMP_ID]));
-		}
-	
-	
-	
-	
-		 public function add(){
-			 
-			$CompanyInfo = $this->CompanyInfo->newEntity();
-			if ($this->request->is('post')) {
-				$CompanyInfo = $this->CompanyInfo->patchEntity($CompanyInfo, $this->request->data);
-				if ($this->CompanyInfo->save($CompanyInfo)) {
-					$this->Flash->success(__('Your CompanyInfo has been saved.'));
-					return $this->redirect(array('controller'=>'CompanyRoot','action' => 'index'));
-				}
-				$this->Flash->error(__('Unable to add your Company.'));
-			}
-			$this->set('CompanyInfo', $CompanyInfo);
-	
-			$query=$this->CompanyInfo->CompanyRoot->find('list',['keyField' => 'RT_ID','valueField' => 'RT_NAME']);
-			$CompanyRoot = $query->toArray();
-			$this->set(compact('CompanyRoot'));
-		}
-		
-		
-		
-		public function edit($id = null){
-			$CompanyInfo = $this->CompanyInfo->get($id);
-			if ($this->request->is(['post', 'put'])) {
-				$this->CompanyInfo->patchEntity($CompanyInfo, $this->request->data);
-				if ($this->CompanyInfo->save($CompanyInfo)) {
-					$this->Flash->success(__('Your CompanyInfo has been updated.'));
-					return $this->redirect(array('controller'=>'CompanyRoot','action' => 'index'));
-				}
-				$this->Flash->error(__('Unable to update your article.'));
-			}
-		
-			$this->set('CompanyInfo', $CompanyInfo);
-			
-			
-			$query=$this->CompanyInfo->CompanyRoot->find('list',['keyField' => 'RT_ID','valueField' => 'RT_NAME']);
-			$CompanyRoot = $query->toArray();
-			$this->set(compact('CompanyRoot'));
-		}
+use App\Controller\AppController;
 
+class CompanyInfoController extends AppController
+{
+    public function index(): void
+    {
+        $companyInfo = $this->CompanyInfo->find()
+            ->contain(['CompanyBranch'])
+            ->all();
 
+        $this->set(compact('companyInfo'));
+    }
 
-		public function delete($id){
-			$data = $this->CompanyInfo->get($id);
-			$this->CompanyInfo->delete($data);
-			return $this->redirect(array('controller'=>'CompanyRoot','action' => 'index'));
-		}
+    public function view(int $id): void
+    {
+        $companyInfo = $this->CompanyInfo->get($id);
+        $this->set(compact('companyInfo'));
+    }
 
+    public function add()
+    {
+        $companyInfo = $this->CompanyInfo->newEmptyEntity();
 
+        $companyRoot = $this->CompanyInfo->CompanyRoot
+            ->find('list', [
+                'keyField' => 'RT_ID',
+                'valueField' => 'RT_NAME'
+            ])
+            ->toArray();
 
+        if ($this->request->is('post')) {
 
+            $companyInfo = $this->CompanyInfo->patchEntity(
+                $companyInfo,
+                $this->request->getData()
+            );
 
+            if ($this->CompanyInfo->save($companyInfo)) {
+                $this->Flash->success('Saved successfully');
+                return $this->redirect([
+                    'controller' => 'CompanyRoot',
+                    'action' => 'index'
+                ]);
+            }
 
-	}
-?>
+            $this->Flash->error('Save failed');
+        }
+
+        $this->set(compact('companyInfo', 'companyRoot'));
+    }
+
+    public function edit(int $id)
+    {
+        $companyInfo = $this->CompanyInfo->get($id);
+
+        $companyRoot = $this->CompanyInfo->CompanyRoot
+            ->find('list', [
+                'keyField' => 'RT_ID',
+                'valueField' => 'RT_NAME'
+            ])
+            ->toArray();
+
+        if ($this->request->is(['patch', 'post', 'put'])) {
+
+            $companyInfo = $this->CompanyInfo->patchEntity(
+                $companyInfo,
+                $this->request->getData()
+            );
+
+            if ($this->CompanyInfo->save($companyInfo)) {
+                $this->Flash->success('Updated successfully');
+                return $this->redirect([
+                    'controller' => 'CompanyRoot',
+                    'action' => 'index'
+                ]);
+            }
+
+            $this->Flash->error('Update failed');
+        }
+
+        $this->set(compact('companyInfo', 'companyRoot'));
+    }
+
+    public function delete(int $id)
+    {
+        $this->request->allowMethod(['post', 'delete']);
+
+        $companyInfo = $this->CompanyInfo->get($id);
+
+        if ($this->CompanyInfo->delete($companyInfo)) {
+            $this->Flash->success('Deleted successfully');
+        } else {
+            $this->Flash->error('Delete failed');
+        }
+
+        return $this->redirect([
+            'controller' => 'CompanyRoot',
+            'action' => 'index'
+        ]);
+    }
+}
