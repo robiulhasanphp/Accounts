@@ -1,540 +1,182 @@
 <?php
-	namespace App\Controller;
-	
+declare(strict_types=1);
+
+namespace App\Controller;
+
 use App\Controller\AppController;
-use Cake\Event\Event;
-use Cake\Network\Exception\NotFoundException;
-use Cake\ORM\TableRegistry;	
-	
-	
-	class  CreatevoucherController extends AppController{
-		
-/*		var $uses=array ('CompanyRoot', 'CompanyInfo', 'CompanyBranch');
-		public $helpers = array('Html', 'Form', 'Session');
-		public $components = array('Session');*/
-		
-		public function index(){
-			
-	$Createvoucher = $this->Createvoucher->find('all')->contain('Project')->contain('Department');
-        $this->set(compact('Createvoucher'));
-	
-   
-	
-		}
-		
-		
-		
-	 
-		
-		
-		
-	  public function add()
+use Cake\ORM\TableRegistry;
+
+class CreatevoucherController extends AppController
+{
+    public function index(): void
     {
-	
-		$user = $this->Auth->User();
-		
-	$Basicdata = TableRegistry::get('Basicdata');
+        $createvoucher = $this->Createvoucher->find()
+            ->contain(['Project', 'Department'])
+            ->all();
 
-		$query=$Basicdata->find('list',['keyField' => ['BAS_ID'],'valueField' => 'BAS_NAME'])
-		->where(['BAS_TYPE_ID' =>5]);
-		$project = $query->toArray();
-		 $this->set(compact('project'));
-		 
+        $this->set(compact('createvoucher'));
+    }
 
-		
-		$query=$Basicdata->find('list',['keyField' => ['BAS_ID'],'valueField' => 'BAS_NAME'])
-		->where(['BAS_TYPE_ID' =>4]);
-		$department = $query->toArray();
-		 $this->set(compact('department'));
-		
-		
-		
-		
-			$query=$this->Createvoucher->Ledgers->find('list',['keyField' => 'LDG_ID','valueField' => 'LDG_NAME']);
-		    $LDG_name = $query->toArray();
-		    $this->set(compact('LDG_name'));
+    public function add()
+    {
+        $user = $this->Auth->user();
+        $createvoucher = $this->Createvoucher->newEmptyEntity();
 
-		 
+        $basic = TableRegistry::getTableLocator()->get('Basicdata');
 
-			$query = $this->Createvoucher->find();
-			$query->select(['max' => $query->func()->max('VCH_ID')]);
+        $project = $basic->find('list', ['keyField' => 'BAS_ID', 'valueField' => 'BAS_NAME'])
+            ->where(['BAS_TYPE_ID' => 5])
+            ->toArray();
 
-			$m_id=$query->toArray();
-			$a=$m_id[0]['max'];
-			$b=((int)$a)+1;
+        $department = $basic->find('list', ['keyField' => 'BAS_ID', 'valueField' => 'BAS_NAME'])
+            ->where(['BAS_TYPE_ID' => 4])
+            ->toArray();
 
-		
-	
-	
-        $Createvoucher = $this->Createvoucher->newEntity();
+        $ledgers = $this->Createvoucher->Ledgers->find('list', [
+            'keyField' => 'LDG_ID',
+            'valueField' => 'LDG_NAME'
+        ])->toArray();
+
+        $this->set(compact('project', 'department', 'ledgers'));
+
         if ($this->request->is('post')) {
-			
-			
-			
-				$project=($this->request->data["VCH_PROJECT"]);
-			$department=($this->request->data["VCH_DEPARTMENT"]);
-			
-		
-			$debit_amount=($this->request->data["debit_amount"]);
-			$credit_amount=($this->request->data["credit_amount"]);
-			
-			$debit_amount_2=($this->request->data["debit_amount_2"]);
-			$credit_amount_2=($this->request->data["credit_amount_2"]);
-			
-			$add_1=$debit_amount+$debit_amount_2;
-	
-			
-			$add_2=$credit_amount+$credit_amount_2;
-			
-		if($add_1!=$add_2)
-		{
-		
-		echo "debit & credit balance is not equal,Please Correct your data";
-		exit;
-			
-		}
-		
-	
-			$VCH_NARRATION_1=($this->request->data["VCH_NARRATION_1"]);
-			$VCH_NARRATION_2=($this->request->data["VCH_NARRATION_2"]);
-			
-			
-			$Sales_from=($this->request->data["VCH_CR_ACCOUNTS"]);
-			$items=($this->request->data["VCH_DR_ACCOUNTS"]);
-			
-			
-			$ldg = $this->Createvoucher->Ledgers->get($Sales_from);
-			
-			$Sales_from_name= $ldg->LDG_NAME;
-			
-			$ldg = $this->Createvoucher->Ledgers->get($items);
-			
-			$item_name= $ldg->LDG_NAME;
-			
-            $Createvoucher = $this->Createvoucher->patchEntity($Createvoucher, $this->request->data);
-			
-			
-			
-			
-			$Createvoucher->VCH_STATUS=0;
-			$Createvoucher->VCH_CREATE_BY=$user['USR_ID'];
-			
-			$Createvoucher->VCH_TYPE=7;
-			$Createvoucher->VCH_STATUS=13;
-			$Createvoucher->VCH_STATUS_BY=$user['USR_ID'];
-			$Createvoucher->VCH_LAST_EDIT_BY=$user['USR_ID'];
-			$Createvoucher->VCH_SUBMIT_BY=$user['USR_ID'];
-				
-			$narration=$this->request->data('VCH_NARRATION');
-			
-			
-			$full_des=$Sales_from_name.','.$item_name.','.$narration;
-			
-			$Createvoucher->VCH_FULL_DESCRIPTION=$full_des;
-			
-		
-			
-			$date=$this->request->data('pdate');
-				$date_1 = explode('-', $date);
-				$d = $date_1[0];
-				$m = $date_1[1];
-				$y = $date_1[2];
-				$vch_date = $y.'-'.$m.'-'.$d;
-				
-			$Createvoucher->VCH_DATE=$vch_date;
-		
-		
-				$month = $m;	
-			
-		
-				$year = $d;	
-		
-			
-			
-			$Createvoucher->VCH_MONTH=$month;
-			$Createvoucher->VCH_YEAR=$year;
-			
-			
-				$vch_Full=$year.$month.'0000'.$b;
-			
-			$Createvoucher->VCH_NO_FULL=$vch_Full;
-			
-								if($debit_amount>0)
-										{
-											$Createvoucher->VCH_AMOUNT=$debit_amount;
-											
-										}
-									
-								else
-										
-										{
-										$Createvoucher->VCH_AMOUNT=$credit_amount;
-										}
-			
-			
-			
-            if ($this->Createvoucher->save($Createvoucher)) {
-                $this->Flash->success(__('The vouchers has been saved.'));
-				
-				
-				
-				
-				$VCH_NO = $Createvoucher->VCH_NO_FULL; 
-				$id = $Createvoucher->VCH_ID;  //data call from table
-				$new_id=$id;
-				
-			
-				
-				//insert data in another table
 
-				
-				 $Voucherdtl = $this->Createvoucher->Voucherdtl->newEntity();
-				  $Voucherdtl->VCH_ID=$new_id;
-				   $Voucherdtl->VDT_DATE=$vch_date;
-				    $Voucherdtl->VDT_VOUCHER_NO=$VCH_NO;
-					 $Voucherdtl->VDT_LOT=1;
-					  $Voucherdtl->VDT_SR=1;
-					    $Voucherdtl->VDT_LDG_ID=$Sales_from;
-					     $Voucherdtl->VDT_DESCRIPTION=$VCH_NARRATION_1;
-						   $Voucherdtl->VDT_PROJECT=$project;
-					     $Voucherdtl->VDT_DEPARTMENT=$department;
-					  
-							
-								if($debit_amount>0)
-										{
-											$Voucherdtl->VDT_DEBIT=$debit_amount;
-											$Voucherdtl->VDT_CREDIT=0;
-										}
-									
-								else
-										
-										{
-										$Voucherdtl->VDT_DEBIT=0;
-										$Voucherdtl->VDT_CREDIT=$credit_amount;
-										}
-						
-				    $this->Createvoucher->Voucherdtl->save($Voucherdtl);
-				   
-		
-		
-				 $Voucherdt2 = $this->Createvoucher->Voucherdtl->newEntity();
-				 
-				  $Voucherdt2->VCH_ID=$new_id;
-				   $Voucherdt2->VDT_DATE=$vch_date;
-				    $Voucherdt2->VDT_VOUCHER_NO=$VCH_NO;
-					 $Voucherdt2->VDT_LOT=1;
-					  $Voucherdt2->VDT_SR=2;
-					  	$Voucherdt2->VDT_LDG_ID=$items;
-						$Voucherdt2->VDT_DESCRIPTION=$VCH_NARRATION_2;
-						
-						$Voucherdt2->VDT_PROJECT=$project;
-						$Voucherdt2->VDT_DEPARTMENT=$department;
-						
-						
-					  	if($debit_amount_2>0)
-						{
-						
-					  	$Voucherdt2->VDT_DEBIT=$debit_amount_2;
-				   		$Voucherdt2->VDT_CREDIT=0;
-						}
-						
-						else
-						{
-						
-					  	$Voucherdt2->VDT_DEBIT=0;
-				   		$Voucherdt2->VDT_CREDIT=$credit_amount_2;
-						}
-						
-						
-				    $this->Createvoucher->Voucherdtl->save($Voucherdt2);
-	 
-	 				return $this->redirect(array('action' => 'index'));
-			 
+            $data = $this->request->getData();
+
+            $debit1 = (float)$data['debit_amount'];
+            $credit1 = (float)$data['credit_amount'];
+            $debit2 = (float)$data['debit_amount_2'];
+            $credit2 = (float)$data['credit_amount_2'];
+
+            if (($debit1 + $debit2) !== ($credit1 + $credit2)) {
+                $this->Flash->error('Debit and credit must match');
+                return;
             }
-            $this->Flash->error(__('Unable to add the vouchers.'));
+
+            $createvoucher = $this->Createvoucher->patchEntity($createvoucher, $data);
+
+            $createvoucher->VCH_TYPE = 7;
+            $createvoucher->VCH_STATUS = 13;
+            $createvoucher->VCH_CREATE_BY = $user['USR_ID'];
+
+            $date = $this->formatDate($data['pdate']);
+            if (!$date) {
+                $this->Flash->error('Invalid date');
+                return;
+            }
+
+            $createvoucher->VCH_DATE = $date;
+
+            if ($this->Createvoucher->save($createvoucher)) {
+
+                $this->saveVoucherDetails($createvoucher, $data);
+
+                $this->Flash->success('Voucher saved');
+                return $this->redirect(['action' => 'index']);
+            }
+
+            $this->Flash->error('Save failed');
         }
-        $this->set('Createvoucher', $Createvoucher);
+
+        $this->set(compact('createvoucher'));
     }
 
+    public function edit(int $id)
+    {
+        $user = $this->Auth->user();
+        $createvoucher = $this->Createvoucher->get($id);
 
-		
-		
-		
-		
-public function edit($VCH_ID = null)
-{
-	
-			
-				$user = $this->Auth->User();
-		
-	$Basicdata = TableRegistry::get('Basicdata');
+        if ($this->request->is(['patch', 'post', 'put'])) {
 
-		$query=$Basicdata->find('list',['keyField' => ['BAS_ID'],'valueField' => 'BAS_NAME'])
-		->where(['BAS_TYPE_ID' =>5]);
-		$project = $query->toArray();
-		 $this->set(compact('project'));
-		 
+            $data = $this->request->getData();
 
-		
-		$query=$Basicdata->find('list',['keyField' => ['BAS_ID'],'valueField' => 'BAS_NAME'])
-		->where(['BAS_TYPE_ID' =>4]);
-		$department = $query->toArray();
-		 $this->set(compact('department'));
-		
-		
-		
-		
-			$query=$this->Createvoucher->Ledgers->find('list',['keyField' => 'LDG_ID','valueField' => 'LDG_NAME']);
-		    $LDG_name = $query->toArray();
-		    $this->set(compact('LDG_name'));
+            $createvoucher = $this->Createvoucher->patchEntity($createvoucher, $data);
 
-		 
+            $createvoucher->VCH_STATUS = STS_EDIT;
+            $createvoucher->VCH_LAST_EDIT_BY = $user['USR_ID'];
 
-			$query = $this->Createvoucher->find();
-			$query->select(['max' => $query->func()->max('VCH_ID')]);
+            if ($this->Createvoucher->save($createvoucher)) {
 
-			$m_id=$query->toArray();
-			$a=$m_id[0]['max'];
-			$b=((int)$a)+1;
+                $this->Createvoucher->Voucherdtl->deleteAll(['VCH_ID' => $id]);
+                $this->saveVoucherDetails($createvoucher, $data);
 
-		
-					
-			/*	$Sales = $this->Sales->get($VCH_ID);
-				
-				$da=$Sales->VCH_DATE;
-				*/
+                $this->Flash->success('Updated successfully');
+                return $this->redirect(['action' => 'index']);
+            }
 
-    if ($this->request->is(['post', 'put'])) 
-	
-	{
-		
-		
-			
-				$project=($this->request->data["VCH_PROJECT"]);
-			$department=($this->request->data["VCH_DEPARTMENT"]);
-			
-		
-			$debit_amount=($this->request->data["debit_amount"]);
-			$credit_amount=($this->request->data["credit_amount"]);
-			
-			$debit_amount_2=($this->request->data["debit_amount_2"]);
-			$credit_amount_2=($this->request->data["credit_amount_2"]);
-			
-			$add_1=$debit_amount+$debit_amount_2;
-	
-			
-			$add_2=$credit_amount+$credit_amount_2;
-			
-		if($add_1!=$add_2)
-		{
-		
-		echo "debit & credit balance is not equal,Please Correct your data";
-		exit;
-			
-		}
-		
-	
-			$VCH_NARRATION_1=($this->request->data["VCH_NARRATION_1"]);
-			$VCH_NARRATION_2=($this->request->data["VCH_NARRATION_2"]);
-			
-			
-			$Sales_from=($this->request->data["VCH_CR_ACCOUNTS"]);
-			$items=($this->request->data["VCH_DR_ACCOUNTS"]);
-			
-			
-			$ldg = $this->Createvoucher->Ledgers->get($Sales_from);
-			
-			$Sales_from_name= $ldg->LDG_NAME;
-			
-			$ldg = $this->Createvoucher->Ledgers->get($items);
-			
-			$item_name= $ldg->LDG_NAME;
-			
-            $Createvoucher = $this->Createvoucher->patchEntity($Createvoucher, $this->request->data);
-			
-			
-			
-			
-			$Createvoucher->VCH_STATUS=0;
-			$Createvoucher->VCH_CREATE_BY=$user['USR_ID'];
-			
-			$Createvoucher->VCH_TYPE=7;
-			$Createvoucher->VCH_STATUS=13;
-			$Createvoucher->VCH_STATUS_BY=$user['USR_ID'];
-			$Createvoucher->VCH_LAST_EDIT_BY=$user['USR_ID'];
-			$Createvoucher->VCH_SUBMIT_BY=$user['USR_ID'];
-				
-			$narration=$this->request->data('VCH_NARRATION');
-			
-			
-			$full_des=$Sales_from_name.','.$item_name.','.$narration;
-			
-			$Createvoucher->VCH_FULL_DESCRIPTION=$full_des;
-			
-		
-			
-			$date=$this->request->data('pdate');
-				$date_1 = explode('-', $date);
-				$d = $date_1[0];
-				$m = $date_1[1];
-				$y = $date_1[2];
-				$vch_date = $y.'-'.$m.'-'.$d;
-				
-			$Createvoucher->VCH_DATE=$vch_date;
-	
-				$month = $m;	
-			
-				$year = $d;	
-		
-			
-			
-			$Createvoucher->VCH_MONTH=$month;
-			$Createvoucher->VCH_YEAR=$year;
-			
-			
-				$vch_Full=$year.$month.'0000'.$b;
-			
-			$Createvoucher->VCH_NO_FULL=$vch_Full;
-			
-								if($debit_amount>0)
-										{
-											$Createvoucher->VCH_AMOUNT=$debit_amount;
-											
-										}
-									
-								else
-										
-										{
-										$Createvoucher->VCH_AMOUNT=$credit_amount;
-										}
-				  
-				  // saaving purchase data
-				  
-				  if ($this->Sales->save($Createvoucher)) 
-				  
-				  {
-				  $this->Flash->success(__('Your article has been updated.'));
-				  }
-				  
-				  
-				  // getting voucher detqail data from voucher detail table with vch id from purchase  selection
-				  
-				  
-				  /* first delete  then insert to detail table*/
-			
-			if ($this->Sales->Voucherdtl->deleteAll(['VCH_ID' =>$VCH_ID]))
-				
-				{
-						
-								
-								
-								
-								$VCH_NO = $Sales->VCH_NO_FULL; 
-								$id = $Sales->VCH_ID;  //data call from table
-								$new_id=$id;
-								//insert data in another table
-								
-								
-								$Voucherdtl = $this->Sales->Voucherdtl->newEntity();
-								
-								$Voucherdtl->VCH_ID=$new_id;
-								$Voucherdtl->VDT_DATE=$birthday;
-								$Voucherdtl->VDT_VOUCHER_NO=$VCH_NO;
-								$Voucherdtl->VDT_LOT=1;
-								$Voucherdtl->VDT_SR=1;
-								$Voucherdtl->VDT_LDG_ID=$Sales_from;
-								$Voucherdtl->VDT_DEBIT=0;
-								$Voucherdtl->VDT_CREDIT=$amount;
-								$this->Sales->Voucherdtl->save($Voucherdtl);
-								
-								
-								
-								
-								
-								$Voucherdt2 = $this->Sales->Voucherdtl->newEntity();
-								$Voucherdt2->VCH_ID=$new_id;
-								$Voucherdt2->VDT_DATE=$birthday;
-								$Voucherdt2->VDT_VOUCHER_NO=$VCH_NO;
-								$Voucherdt2->VDT_LOT=1;
-								$Voucherdt2->VDT_SR=2;
-								$Voucherdt2->VDT_LDG_ID=$items;
-								
-								$Voucherdt2->VDT_DEBIT=$amount;
-								$Voucherdt2->VDT_CREDIT=0;
-								
-								$this->Sales->Voucherdtl->save($Voucherdt2);
-					
-			
-			
-			return $this->redirect(['action' => 'index']);
-					}
-	}
-
-		
-			$this->Flash->error(__('Unable to update your article.'));
-  
-    $this->set('Sales', $Sales);
-}
-
-	
-	
-		
-public function delete($VCH_ID = null)
-{
-	
-	
-	
-    $Sales = $this->Sales->get($VCH_ID);
-    if ($this->request->is(['post', 'put'])) {
-		
-		$delete=($this->request->data["VCH_NARRATION"]);
-		
-		
-        $this->Sales->patchEntity($Sales, $this->request->data);
-		
-		$Sales->VCH_STATUS=18;
-		$Sales->VCH_STATUS_DESC=$delete;
-		
-        if ($this->Sales->save($Sales)) {
-            $this->Flash->success(__('Your article has been updated.'));
-            return $this->redirect(['action' => 'index']);
+            $this->Flash->error('Update failed');
         }
-        $this->Flash->error(__('Unable to update your article.'));
+
+        $this->set(compact('createvoucher'));
     }
 
-    $this->set('Sales', $Sales);
-}
+    public function delete(int $id)
+    {
+        $this->request->allowMethod(['post', 'delete']);
 
-	
-	
-	
-	
-	public function isAuthorized($user)
-{
-    // All registered users can add articles
-    if ($this->request->action === 'add') 
-	{
-        return true;
+        $voucher = $this->Createvoucher->get($id);
+
+        $voucher->VCH_STATUS = 18;
+
+        if ($this->Createvoucher->save($voucher)) {
+            $this->Flash->success('Deleted successfully');
+        } else {
+            $this->Flash->error('Delete failed');
+        }
+
+        return $this->redirect(['action' => 'index']);
     }
 
-    // The owner of an article can edit and delete it
-  /*  if (in_array($this->request->action, ['edit', 'delete']))
-	 {
-        $articleId = (int)$this->request->params['pass'][0];
-        if ($this->Articles->isOwnedBy($articleId, $user['id'])) 
-		{
+    private function saveVoucherDetails($voucher, array $data): void
+    {
+        $details = [
+            [
+                'ldg' => $data['VCH_CR_ACCOUNTS'],
+                'debit' => $data['debit_amount'],
+                'credit' => $data['credit_amount'],
+                'desc' => $data['VCH_NARRATION_1']
+            ],
+            [
+                'ldg' => $data['VCH_DR_ACCOUNTS'],
+                'debit' => $data['debit_amount_2'],
+                'credit' => $data['credit_amount_2'],
+                'desc' => $data['VCH_NARRATION_2']
+            ]
+        ];
+
+        foreach ($details as $i => $row) {
+
+            $entity = $this->Createvoucher->Voucherdtl->newEmptyEntity();
+
+            $entity->VCH_ID = $voucher->VCH_ID;
+            $entity->VDT_DATE = $voucher->VCH_DATE;
+            $entity->VDT_VOUCHER_NO = $voucher->VCH_NO_FULL;
+            $entity->VDT_SR = $i + 1;
+            $entity->VDT_LDG_ID = $row['ldg'];
+            $entity->VDT_DESCRIPTION = $row['desc'];
+            $entity->VDT_DEBIT = (float)$row['debit'];
+            $entity->VDT_CREDIT = (float)$row['credit'];
+
+            $this->Createvoucher->Voucherdtl->save($entity);
+        }
+    }
+
+    private function formatDate(?string $date): ?string
+    {
+        if (!$date || strlen($date) < 8) {
+            return null;
+        }
+
+        [$d, $m, $y] = explode('-', $date);
+        return "$y-$m-$d";
+    }
+
+    public function isAuthorized($user): bool
+    {
+        if ($this->request->getParam('action') === 'add') {
             return true;
         }
-    }*/
 
-    return parent::isAuthorized($user);
+        return parent::isAuthorized($user);
+    }
 }
-	
-	
-		
-		
-		
-		
-	}
-
-?>
