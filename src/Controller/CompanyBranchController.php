@@ -1,150 +1,112 @@
-<?php	
-	namespace App\Controller;
+<?php
+declare(strict_types=1);
 
-	use App\Controller\AppController;
-	
-	class CompanyBranchController extends AppController{
-		public function index(){
-			$this->set('CompanyBranch', $this->CompanyBranch->find('all'));
-		}
-		
-		
-		public function view($BRN_ID){
-			$this->set('CompanyBranch', $this->CompanyBranch->find('all')->where(['BRN_ID'=>$BRN_ID]));
-		}
-		public function showbranch($CMP_ID){
-			//return $this->CompanyBranch->find('all')->where(['CMP_ID'=>$CMP_ID]);
-				$this->set('CompanyBranch', $this->CompanyBranch->find('all')->where(['CMP_ID'=>$CMP_ID]));
-		}
-		
-		 public function add(){
-			 
-			$CompanyBranch = $this->CompanyBranch->newEntity();
-			if ($this->request->is('post')) {
-				$CompanyBranch = $this->CompanyBranch->patchEntity($CompanyBranch, $this->request->data);
-				if ($this->CompanyBranch->save($CompanyBranch)) {
-					$this->Flash->success(__('Your CompanyBranch has been saved.'));
-					return $this->redirect(array('controller'=>'CompanyRoot','action' => 'index'));
-				}
-				$this->Flash->error(__('Unable to add your article.'));
-			}
-			$this->set('CompanyBranch', $CompanyBranch);
-	
-			$query=$this->CompanyBranch->CompanyInfo->find('list',['keyField' => 'CMP_ID','valueField' => 'CMP_NAME']);
-			$CompanyInfo = $query->toArray();
-			$this->set(compact('CompanyInfo'));
-		}
-		
-		
-		
-		public function edit($id = null){
-			$CompanyBranch = $this->CompanyBranch->get($id);
-			if ($this->request->is(['post', 'put'])) {
-				$this->CompanyBranch->patchEntity($CompanyBranch, $this->request->data);
-				if ($this->CompanyBranch->save($CompanyBranch)) {
-					$this->Flash->success(__('Your CompanyBranch has been updated.'));
-				return $this->redirect(array('controller'=>'CompanyRoot','action' => 'index'));
-				}
-				$this->Flash->error(__('Unable to update your CompanyBranch.'));
-			}
-		
-			$this->set('CompanyBranch', $CompanyBranch);
-			
-			
-			$query=$this->CompanyBranch->CompanyInfo->find('list',['keyField' => 'CMP_ID','valueField' => 'CMP_NAME']);
-			$CompanyInfo = $query->toArray();
-			$this->set(compact('CompanyInfo'));
-		}
-		
-		
-		
-		
-		public function delete($id){
-			$data = $this->CompanyBranch->get($id);
-			$this->CompanyBranch->delete($data);
-			return $this->redirect(array('controller'=>'CompanyRoot','action' => 'index'));
-		}
-		
-		
-		
-		
-		
-		
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	/*namespace App\Controller;
-	use App\Controller\AppController;
-	$uses = array('CompanyRoot', 'CompanyInfo');
-	
-	class CompanyInfoController extends AppController{
-		
-		
-		public function index(){
-			$this->set('CompanyInfo', $this->CompanyInfo->find('all'));
-		}
-		
-		public function view($CMP_ID){
-			$this->set('CompanyInfo', $this->CompanyInfo->find('all')->where(['CMP_ID'=>$CMP_ID]));
-		}
-	
-	
-	
-	
-		 public function add(){
-			 
-			$CompanyInfo = $this->CompanyInfo->newEntity();
-			if ($this->request->is('post')) {
-				$CompanyInfo = $this->CompanyInfo->patchEntity($CompanyInfo, $this->request->data);
-				if ($this->CompanyInfo->save($CompanyInfo)) {
-					$this->Flash->success(__('Your CompanyInfo has been saved.'));
-					return $this->redirect(array('action' => 'index'));
-				}
-				$this->Flash->error(__('Unable to add your article.'));
-			}
-			$this->set('CompanyInfo', $CompanyInfo);
-	
-			$query=$this->CompanyInfo->CompanyRoot->find('list',['keyField' => 'RT_ID','valueField' => 'RT_NAME']);
-			$CompanyRoot = $query->toArray();
-			$this->set(compact('CompanyRoot'));
-		}
-		
-		
-		
-		public function edit($id = null){
-			$CompanyInfo = $this->CompanyInfo->get($id);
-			if ($this->request->is(['post', 'put'])) {
-				$this->CompanyInfo->patchEntity($CompanyInfo, $this->request->data);
-				if ($this->CompanyInfo->save($CompanyInfo)) {
-					$this->Flash->success(__('Your CompanyInfo has been updated.'));
-					return $this->redirect(['action' => 'index']);
-				}
-				$this->Flash->error(__('Unable to update your article.'));
-			}
-		
-			$this->set('CompanyInfo', $CompanyInfo);
-			
-			
-			$query=$this->CompanyInfo->CompanyRoot->find('list',['keyField' => 'RT_ID','valueField' => 'RT_NAME']);
-			$CompanyRoot = $query->toArray();
-			$this->set(compact('CompanyRoot'));
-		}
+namespace App\Controller;
 
+use App\Controller\AppController;
 
+class CompanyBranchController extends AppController
+{
+    public function index(): void
+    {
+        $companyBranch = $this->CompanyBranch->find()->all();
+        $this->set(compact('companyBranch'));
+    }
 
+    public function view(int $id): void
+    {
+        $companyBranch = $this->CompanyBranch->get($id);
+        $this->set(compact('companyBranch'));
+    }
 
+    public function showBranch(int $companyId): void
+    {
+        $companyBranch = $this->CompanyBranch->find()
+            ->where(['CMP_ID' => $companyId])
+            ->all();
 
+        $this->set(compact('companyBranch'));
+    }
 
+    public function add()
+    {
+        $companyBranch = $this->CompanyBranch->newEmptyEntity();
 
+        $companyInfo = $this->CompanyBranch->CompanyInfo
+            ->find('list', [
+                'keyField' => 'CMP_ID',
+                'valueField' => 'CMP_NAME'
+            ])
+            ->toArray();
 
+        if ($this->request->is('post')) {
 
+            $companyBranch = $this->CompanyBranch->patchEntity(
+                $companyBranch,
+                $this->request->getData()
+            );
 
-	}*/
-?>
+            if ($this->CompanyBranch->save($companyBranch)) {
+                $this->Flash->success('Saved successfully');
+                return $this->redirect([
+                    'controller' => 'CompanyRoot',
+                    'action' => 'index'
+                ]);
+            }
+
+            $this->Flash->error('Save failed');
+        }
+
+        $this->set(compact('companyBranch', 'companyInfo'));
+    }
+
+    public function edit(int $id)
+    {
+        $companyBranch = $this->CompanyBranch->get($id);
+
+        $companyInfo = $this->CompanyBranch->CompanyInfo
+            ->find('list', [
+                'keyField' => 'CMP_ID',
+                'valueField' => 'CMP_NAME'
+            ])
+            ->toArray();
+
+        if ($this->request->is(['patch', 'post', 'put'])) {
+
+            $companyBranch = $this->CompanyBranch->patchEntity(
+                $companyBranch,
+                $this->request->getData()
+            );
+
+            if ($this->CompanyBranch->save($companyBranch)) {
+                $this->Flash->success('Updated successfully');
+                return $this->redirect([
+                    'controller' => 'CompanyRoot',
+                    'action' => 'index'
+                ]);
+            }
+
+            $this->Flash->error('Update failed');
+        }
+
+        $this->set(compact('companyBranch', 'companyInfo'));
+    }
+
+    public function delete(int $id)
+    {
+        $this->request->allowMethod(['post', 'delete']);
+
+        $companyBranch = $this->CompanyBranch->get($id);
+
+        if ($this->CompanyBranch->delete($companyBranch)) {
+            $this->Flash->success('Deleted successfully');
+        } else {
+            $this->Flash->error('Delete failed');
+        }
+
+        return $this->redirect([
+            'controller' => 'CompanyRoot',
+            'action' => 'index'
+        ]);
+    }
+}
